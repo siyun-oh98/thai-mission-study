@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>초등부 선교팀 태국어 마스터</title>
+<style>
+  :root{
+    --blue:#1e4b8f;
+    --blue-dark:#123166;
+    --blue-light:#e8f0fb;
+    --accent:#f2994a;
+    --good:#2e9e5b;
+    --bad:#d64545;
+    --bg:#f6f8fc;
+    --card:#ffffff;
+    --text:#1c2430;
+    --muted:#6b7686;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif;
+    background:var(--bg); color:var(--text);
+  }
+  header{
+    background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+    color:#fff; padding:16px; text-align:center;
+    position:sticky; top:0; z-index:5;
+  }
+  header h1{margin:0; font-size:1.25rem;}
+
+  nav#tabs{
+    position:fixed; left:0; right:0; bottom:0; z-index:20;
+    display:flex; background:var(--blue-dark);
+    box-shadow:0 -2px 10px rgba(0,0,0,0.18);
+    padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+  }
+  nav#tabs button{
+    flex:1; background:transparent; color:rgba(255,255,255,0.75);
+    border:none; border-radius:10px; padding:8px 2px;
+    font-size:0.74rem; cursor:pointer; white-space:nowrap;
+  }
+  nav#tabs button.active{background:rgba(255,255,255,0.16); color:#fff; font-weight:bold;}
+
+  main{max-width:720px; margin:0 auto; padding:16px 16px 92px;}
+  section{display:none;}
+  section.active{display:block;}
+  .card-cat{
+    background:var(--card); border-radius:12px; margin-bottom:16px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.06); overflow:hidden;
+  }
+  .card-cat h2{
+    margin:0; background:var(--blue-light); color:var(--blue-dark);
+    padding:10px 14px; font-size:1rem;
+  }
+  table{width:100%; border-collapse:collapse;}
+  td{padding:9px 12px; border-bottom:1px solid #eef1f6; font-size:0.92rem; vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  td.ko{width:42%; color:var(--text);}
+  td.th{color:var(--blue-dark); font-weight:600; display:flex; align-items:center; justify-content:space-between; gap:6px;}
+  .th-text{flex:1;}
+  .speak-btn{
+    flex:0 0 auto; background:var(--blue-light); border:none; border-radius:50%;
+    width:30px; height:30px; font-size:0.95rem; cursor:pointer; color:var(--blue-dark);
+  }
+  .speak-btn:active{transform:scale(0.9);}
+
+  /* Flashcard */
+  .fc-wrap{text-align:center;}
+  .fc-controls{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
+  .fc-controls select{padding:6px 8px; border-radius:8px; border:1px solid #ccd4e0;}
+  .fc-progress{font-size:0.85rem; color:var(--muted);}
+  .flashcard{
+    background:var(--card); border-radius:16px; min-height:180px;
+    display:flex; align-items:center; justify-content:center; flex-direction:column;
+    box-shadow:0 4px 14px rgba(0,0,0,0.08); cursor:pointer; padding:24px;
+    margin-bottom:14px; user-select:none;
+  }
+  .flashcard .front{font-size:1.5rem; font-weight:bold;}
+  .flashcard .back{font-size:1.3rem; color:var(--blue); margin-top:10px; font-weight:600; display:flex; align-items:center; gap:10px;}
+  .flashcard .hint{font-size:0.8rem; color:var(--muted); margin-top:12px;}
+  .fc-nav{display:flex; gap:10px; justify-content:center;}
+
+  button.btn{
+    background:var(--blue); color:#fff; border:none; border-radius:10px;
+    padding:10px 18px; font-size:0.9rem; cursor:pointer;
+  }
+  button.btn.secondary{background:#e3e8f2; color:var(--blue-dark);}
+  button.btn.accent{background:var(--accent);}
+  button.btn:active{transform:scale(0.97);}
+
+  /* Quiz */
+  .quiz-box{background:var(--card); border-radius:14px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+  .quiz-q{font-size:1.3rem; font-weight:bold; text-align:center; margin-bottom:16px;}
+  .quiz-box input{
+    width:100%; padding:12px; font-size:1rem; border-radius:10px;
+    border:2px solid #ccd4e0; margin-bottom:12px;
+  }
+  .quiz-box input.correct{border-color:var(--good); background:#eafaf0;}
+  .quiz-box input.wrong{border-color:var(--bad); background:#fdecec;}
+  .quiz-feedback{min-height:24px; font-size:0.9rem; margin-bottom:10px; text-align:center;}
+  .quiz-feedback.good{color:var(--good); font-weight:bold;}
+  .quiz-feedback.bad{color:var(--bad); font-weight:bold;}
+  .quiz-actions{display:flex; gap:10px; justify-content:center;}
+  .quiz-score{text-align:right; font-size:0.85rem; color:var(--muted); margin-bottom:8px;}
+
+  /* Game common */
+  .game-modes{display:flex; gap:6px; margin-bottom:14px;}
+  .game-modes button{
+    flex:1; background:var(--card); border:2px solid transparent; border-radius:10px;
+    padding:9px 4px; font-size:0.78rem; cursor:pointer; color:var(--text);
+    box-shadow:0 2px 6px rgba(0,0,0,0.06);
+  }
+  .game-modes button.active{border-color:var(--blue); color:var(--blue); font-weight:bold;}
+  .game-panel{display:none;}
+  .game-panel.active{display:block;}
+  .game-bar{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; font-size:0.9rem;}
+
+  .game-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:8px;}
+  .game-cell{
+    background:var(--card); border-radius:10px; min-height:74px;
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    padding:6px; font-size:0.85rem; font-weight:600; cursor:pointer;
+    box-shadow:0 2px 6px rgba(0,0,0,0.06); border:2px solid transparent;
+  }
+  .game-cell.selected{border-color:var(--accent);}
+  .game-cell.matched{background:#e2f7ea; color:var(--good); border-color:var(--good); cursor:default;}
+  .game-cell.wrong{border-color:var(--bad);}
+  .game-win{text-align:center; font-weight:bold; color:var(--good); margin-top:14px;}
+
+  .choice-q{background:var(--card); border-radius:14px; padding:24px; text-align:center; font-size:1.3rem; font-weight:bold; box-shadow:0 2px 8px rgba(0,0,0,0.06); margin-bottom:14px;}
+  .choice-options{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .choice-opt{
+    background:var(--card); border:2px solid #ccd4e0; border-radius:10px; padding:14px 8px;
+    font-size:0.95rem; font-weight:600; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,0.06);
+  }
+  .choice-opt.correct{border-color:var(--good); background:#eafaf0; color:var(--good);}
+  .choice-opt.wrong{border-color:var(--bad); background:#fdecec; color:var(--bad);}
+  .choice-opt[disabled]{cursor:default;}
+
+  .typing-timer{font-size:1.6rem; font-weight:bold; text-align:center; color:var(--blue-dark); margin-bottom:10px;}
+  .typing-result{text-align:center; font-weight:bold; margin-top:14px; font-size:1.1rem;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>초등부 선교팀 태국어 마스터</h1>
+</header>
+
+<nav id="tabs">
+  <button data-tab="all" class="active">전체 보기</button>
+  <button data-tab="flash">단어 학습</button>
+  <button data-tab="quiz-kt">태국어 빈칸</button>
+  <button data-tab="quiz-tk">한국어 빈칸</button>
+  <button data-tab="game">미니게임</button>
+</nav>
+
+<main>
+
+  <!-- 1. 전체 보기 -->
+  <section id="tab-all" class="active"></section>
+
+  <!-- 2. 단어 학습 (플래시카드) -->
+  <section id="tab-flash">
+    <div class="fc-wrap">
+      <div class="fc-controls">
+        <select id="fc-cat"></select>
+        <span class="fc-progress" id="fc-progress"></span>
+      </div>
+      <div class="flashcard" id="flashcard">
+        <div class="front" id="fc-front">-</div>
+        <div class="back" id="fc-back" style="display:none;">
+          <span id="fc-back-text">-</span>
+          <button class="speak-btn" id="fc-speak" title="발음 듣기">🔊</button>
+        </div>
+        <div class="hint" id="fc-hint">카드를 눌러 정답 확인</div>
+      </div>
+      <div class="fc-nav">
+        <button class="btn secondary" id="fc-prev">◀ 이전</button>
+        <button class="btn accent" id="fc-shuffle">🔀 섞기</button>
+        <button class="btn secondary" id="fc-next">다음 ▶</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. 태국어 빈칸 (한국어 제시) -->
+  <section id="tab-quiz-kt">
+    <div class="quiz-score" id="kt-score">0 / 0</div>
+    <div class="quiz-box">
+      <div class="quiz-q" id="kt-q">-</div>
+      <input type="text" id="kt-input" placeholder="태국어 발음을 입력하세요">
+      <div class="quiz-feedback" id="kt-feedback"></div>
+      <div class="quiz-actions">
+        <button class="btn" id="kt-check">확인</button>
+        <button class="btn secondary" id="kt-next">다음 문제 ▶</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 한국어 빈칸 (태국어 제시) -->
+  <section id="tab-quiz-tk">
+    <div class="quiz-score" id="tk-score">0 / 0</div>
+    <div class="quiz-box">
+      <div class="quiz-q" id="tk-q">-</div>
+      <input type="text" id="tk-input" placeholder="한국어 뜻을 입력하세요">
+      <div class="quiz-feedback" id="tk-feedback"></div>
+      <div class="quiz-actions">
+        <button class="btn" id="tk-check">확인</button>
+        <button class="btn secondary" id="tk-next">다음 문제 ▶</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. 미니게임 -->
+  <section id="tab-game">
+    <div class="game-modes">
+      <button data-mode="match" class="active">🧩 짝맞추기</button>
+      <button data-mode="choice">🔘 4지선다</button>
+      <button data-mode="typing">⌨️ 타이핑 챌린지</button>
+    </div>
+
+    <div class="game-panel active" id="game-match">
+      <div class="game-bar">
+        <span id="game-status">한국어-태국어 짝을 맞춰보세요</span>
+        <button class="btn secondary" id="game-restart">🔄 새 게임</button>
+      </div>
+      <div class="game-grid" id="game-grid"></div>
+      <div class="game-win" id="game-win" style="display:none;">🎉 모두 맞췄습니다! 새 게임을 눌러 다시 도전하세요.</div>
+    </div>
+
+    <div class="game-panel" id="game-choice">
+      <div class="game-bar">
+        <span id="choice-score">맞은 개수 0 / 0</span>
+        <button class="btn secondary" id="choice-restart">🔄 새 라운드</button>
+      </div>
+      <div class="choice-q" id="choice-q">-</div>
+      <div class="choice-options" id="choice-options"></div>
+    </div>
+
+    <div class="game-panel" id="game-typing">
+      <div class="game-bar">
+        <span id="typing-score">맞은 개수 0</span>
+        <button class="btn secondary" id="typing-restart">▶ 다시 시작</button>
+      </div>
+      <div class="typing-timer" id="typing-timer">60초</div>
+      <div class="quiz-box">
+        <div class="quiz-q" id="typing-q">-</div>
+        <input type="text" id="typing-input" placeholder="태국어 발음을 입력 후 Enter">
+        <div class="quiz-feedback" id="typing-feedback"></div>
+      </div>
+      <div class="typing-result" id="typing-result"></div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+// ---------- 데이터 ----------
+const DATA = {
+  words: {
+    title: "기본 단어",
+    words: [
+      ["물", "나암"],
+      ["화장실", "헝남"],
+      ["이름", "츠"],
+      ["초등학생", "낙리안 쁘라톰"],
+      ["선생님", "크루"],
+      ["멋있다", "테"],
+      ["예쁘다", "쑤와이"],
+      ["맛있다", "아러이"],
+      ["배부르다", "임"],
+      ["배고프다", "히우"],
+      ["잘한다", "깽"],
+      ["목사님", "아짠"]
+    ]
+  },
+  conversation: {
+    title: "기초 회화",
+    words: [
+      ["안녕하세요", "싸왓디 크랍 (카)"],
+      ["감사합니다", "컵쿤 크랍 (카)"],
+      ["실례(미안)합니다", "커톳 크랍 (카)"],
+      ["괜찮습니다", "마이 뻰라이 크랍 (카)"],
+      ["비싸요", "팽 크랍 (카)"],
+      ["깎아 주세요", "롯 너이 다이마이"],
+      ["화장실이 어디에요?", "헝남 유티 나이 크랍 (카)"],
+      ["배고파요", "히우 크랍 (카)"],
+      ["얼마에요?", "타오라이"]
+    ]
+  },
+  gospel: {
+    title: "복음 메세지",
+    words: [
+      ["예배", "나마싸깐"],
+      ["찬양", "싼썬"],
+      ["하나님", "쁘라짜우"],
+      ["예수님", "쁘라 예수"],
+      ["하나님은 당신을 사랑하십니다", "쁘라짜우 락 쿤"],
+      ["예수님 믿으세요", "츠어 나이 쁘라예수 트어"],
+      ["사랑해", "폼 락 쿤 (남자)\n찬 락 쿤 (여자)"],
+      ["기도", "아팃탄"],
+      ["또 만나요", "쩌 깐 마이 크랍 (카)"],
+      ["당신 이름이 무엇입니까?", "쿤 츠 아라이 크랍 (카)"],
+      ["저의 이름은 000입니다", "폼 츠 000 크랍\n디찬 츠 000 카"],
+      ["나이 10살 / 11살", "십 삐 / 십엣 삐"]
+    ]
+  }
+};
+
+const ALL = [];
+Object.entries(DATA).forEach(([key, cat]) => {
+  cat.words.forEach(([ko, th]) => ALL.push({ cat: key, catTitle: cat.title, ko, th }));
+});
+
+// ---------- 정답 비교 유틸 ----------
+function normalize(s){
+  return s.replace(/\s+/g,'').replace(/[()?.!,]/g,'').toLowerCase();
+}
+function answerSet(raw){
+  const segs = raw.split(/[\n\/]/).map(s=>s.trim()).filter(Boolean);
+  const set = new Set();
+  segs.forEach(seg=>{
+    set.add(normalize(seg));
+    const stripped = seg.replace(/\([^)]*\)/g,'').trim();
+    if(stripped) set.add(normalize(stripped));
+    const inlined = seg.replace(/\(([^)]*)\)/g,'$1').trim();
+    if(inlined) set.add(normalize(inlined));
+  });
+  return set;
+}
+function isCorrect(userInput, raw){
+  const u = normalize(userInput);
+  if(!u) return false;
+  return answerSet(raw).has(u);
+}
+function primaryLabel(raw){
+  return raw.split(/[\n\/]/)[0].replace(/\([^)]*\)/g,'').trim();
+}
+
+// ---------- 발음 듣기 (TTS) ----------
+function speakThai(raw){
+  if(!('speechSynthesis' in window)) return;
+  const utter = new SpeechSynthesisUtterance(raw.replace(/[\n\/]/g,' '));
+  utter.lang = 'ko-KR';
+  utter.rate = 0.85;
+  speechSynthesis.cancel();
+  speechSynthesis.speak(utter);
+}
+
+// ---------- 탭 전환 ----------
+document.querySelectorAll('#tabs button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#tabs button').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('main section').forEach(s=>s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ---------- 1. 전체 보기 ----------
+function renderAll(){
+  const el = document.getElementById('tab-all');
+  let globalIdx = 0;
+  el.innerHTML = Object.values(DATA).map(cat=>`
+    <div class="card-cat">
+      <h2>${cat.title}</h2>
+      <table>${cat.words.map(([ko,th])=>{
+        const i = globalIdx++;
+        return `<tr><td class="ko">${ko}</td><td class="th"><span class="th-text">${th.replace(/\n/g,'<br>')}</span><button class="speak-btn" data-i="${i}" title="발음 듣기">🔊</button></td></tr>`;
+      }).join('')}</table>
+    </div>
+  `).join('');
+  el.querySelectorAll('.speak-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>speakThai(ALL[Number(btn.dataset.i)].th));
+  });
+}
+renderAll();
+
+// ---------- 2. 플래시카드 ----------
+let fcList = [...ALL];
+let fcIndex = 0;
+let fcFlipped = false;
+
+const fcCatSel = document.getElementById('fc-cat');
+fcCatSel.innerHTML = `<option value="all">전체</option>` +
+  Object.entries(DATA).map(([k,c])=>`<option value="${k}">${c.title}</option>`).join('');
+
+function fcApplyFilter(){
+  const v = fcCatSel.value;
+  fcList = v==='all' ? [...ALL] : ALL.filter(w=>w.cat===v);
+  fcIndex = 0;
+  fcFlipped = false;
+  renderFlashcard();
+}
+fcCatSel.addEventListener('change', fcApplyFilter);
+
+function renderFlashcard(){
+  const w = fcList[fcIndex];
+  document.getElementById('fc-front').textContent = w ? w.ko : '-';
+  document.getElementById('fc-back-text').textContent = w ? w.th.replace(/\n/g,' / ') : '-';
+  document.getElementById('fc-back').style.display = fcFlipped ? 'flex' : 'none';
+  document.getElementById('fc-hint').style.display = fcFlipped ? 'none' : 'block';
+  document.getElementById('fc-progress').textContent = fcList.length ? `${fcIndex+1} / ${fcList.length}` : '0 / 0';
+}
+document.getElementById('flashcard').addEventListener('click', ()=>{
+  fcFlipped = !fcFlipped;
+  renderFlashcard();
+});
+document.getElementById('fc-speak').addEventListener('click', (e)=>{
+  e.stopPropagation();
+  const w = fcList[fcIndex];
+  if(w) speakThai(w.th);
+});
+document.getElementById('fc-next').addEventListener('click', ()=>{
+  if(!fcList.length) return;
+  fcIndex = (fcIndex+1) % fcList.length;
+  fcFlipped = false;
+  renderFlashcard();
+});
+document.getElementById('fc-prev').addEventListener('click', ()=>{
+  if(!fcList.length) return;
+  fcIndex = (fcIndex-1+fcList.length) % fcList.length;
+  fcFlipped = false;
+  renderFlashcard();
+});
+document.getElementById('fc-shuffle').addEventListener('click', ()=>{
+  for(let i=fcList.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [fcList[i],fcList[j]]=[fcList[j],fcList[i]];
+  }
+  fcIndex = 0; fcFlipped = false;
+  renderFlashcard();
+});
+renderFlashcard();
+
+// ---------- 3/4. 빈칸 퀴즈 (공통 로직) ----------
+function makeQuiz(prefix, getQuestion, getRawAnswer){
+  let order = [];
+  let idx = 0;
+  let score = 0, total = 0;
+  let answered = false;
+
+  function shuffleOrder(){
+    order = ALL.map((_,i)=>i);
+    for(let i=order.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [order[i],order[j]]=[order[j],order[i]];
+    }
+    idx = 0;
+  }
+  shuffleOrder();
+
+  const qEl = document.getElementById(`${prefix}-q`);
+  const inputEl = document.getElementById(`${prefix}-input`);
+  const feedbackEl = document.getElementById(`${prefix}-feedback`);
+  const scoreEl = document.getElementById(`${prefix}-score`);
+  const checkBtn = document.getElementById(`${prefix}-check`);
+  const nextBtn = document.getElementById(`${prefix}-next`);
+
+  function render(){
+    const w = ALL[order[idx]];
+    qEl.textContent = getQuestion(w);
+    inputEl.value = '';
+    inputEl.classList.remove('correct','wrong');
+    feedbackEl.textContent = '';
+    feedbackEl.className = 'quiz-feedback';
+    scoreEl.textContent = `${score} / ${total}`;
+    answered = false;
+    inputEl.focus();
+  }
+
+  function check(){
+    if(answered) return;
+    const w = ALL[order[idx]];
+    const raw = getRawAnswer(w);
+    const ok = isCorrect(inputEl.value, raw);
+    answered = true;
+    total++;
+    if(ok){
+      score++;
+      inputEl.classList.add('correct');
+      feedbackEl.textContent = '정답입니다! 🎉';
+      feedbackEl.className = 'quiz-feedback good';
+    } else {
+      inputEl.classList.add('wrong');
+      feedbackEl.textContent = `아쉬워요. 정답: ${raw.replace(/\n/g,' / ')}`;
+      feedbackEl.className = 'quiz-feedback bad';
+    }
+    scoreEl.textContent = `${score} / ${total}`;
+  }
+
+  function next(){
+    idx++;
+    if(idx >= order.length) shuffleOrder();
+    render();
+  }
+
+  checkBtn.addEventListener('click', check);
+  nextBtn.addEventListener('click', next);
+  inputEl.addEventListener('keydown', e=>{
+    if(e.key==='Enter'){ e.preventDefault(); answered ? next() : check(); }
+  });
+
+  render();
+}
+
+makeQuiz('kt', w=>w.ko, w=>w.th);
+makeQuiz('tk', w=>w.th.replace(/\n/g,' / '), w=>w.ko);
+
+// ---------- 5. 미니게임 ----------
+document.querySelectorAll('.game-modes button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.game-modes button').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.game-panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('game-'+btn.dataset.mode).classList.add('active');
+  });
+});
+
+// 5-1. 짝맞추기
+const gameGrid = document.getElementById('game-grid');
+const gameStatus = document.getElementById('game-status');
+const gameWin = document.getElementById('game-win');
+let gameCells = [];
+let gameSelected = [];
+let gameMatchedCount = 0;
+let gamePairCount = 6;
+
+function startMatchGame(){
+  gameWin.style.display = 'none';
+  gameSelected = [];
+  gameMatchedCount = 0;
+  const pool = ALL.filter(w => normalize(w.ko) !== normalize(primaryLabel(w.th)));
+  for(let i=pool.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [pool[i],pool[j]]=[pool[j],pool[i]];
+  }
+  const picks = pool.slice(0, gamePairCount);
+  let cells = [];
+  picks.forEach((w,i)=>{
+    cells.push({pairId:i, text:w.ko, matched:false});
+    cells.push({pairId:i, text:primaryLabel(w.th), matched:false});
+  });
+  for(let i=cells.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [cells[i],cells[j]]=[cells[j],cells[i]];
+  }
+  gameCells = cells;
+  renderMatchGame();
+  gameStatus.textContent = `한국어-태국어 짝을 맞춰보세요 (0 / ${gamePairCount})`;
+}
+
+function renderMatchGame(){
+  gameGrid.innerHTML = gameCells.map((c,i)=>`
+    <div class="game-cell ${c.matched?'matched':''}" data-i="${i}">${c.text}</div>
+  `).join('');
+  gameGrid.querySelectorAll('.game-cell').forEach(el=>{
+    el.addEventListener('click', onMatchCellClick);
+  });
+}
+
+function onMatchCellClick(e){
+  const i = Number(e.currentTarget.dataset.i);
+  const cell = gameCells[i];
+  if(cell.matched || gameSelected.includes(i)) return;
+  if(gameSelected.length >= 2) return;
+
+  e.currentTarget.classList.add('selected');
+  gameSelected.push(i);
+
+  if(gameSelected.length === 2){
+    const [a,b] = gameSelected;
+    const cellA = gameCells[a], cellB = gameCells[b];
+    if(cellA.pairId === cellB.pairId){
+      cellA.matched = true; cellB.matched = true;
+      gameMatchedCount++;
+      gameSelected = [];
+      renderMatchGame();
+      gameStatus.textContent = `한국어-태국어 짝을 맞춰보세요 (${gameMatchedCount} / ${gamePairCount})`;
+      if(gameMatchedCount === gamePairCount){
+        gameWin.style.display = 'block';
+        gameStatus.textContent = '완료!';
+      }
+    } else {
+      const elA = gameGrid.querySelector(`[data-i="${a}"]`);
+      const elB = gameGrid.querySelector(`[data-i="${b}"]`);
+      elA.classList.add('wrong'); elB.classList.add('wrong');
+      setTimeout(()=>{
+        elA.classList.remove('selected','wrong');
+        elB.classList.remove('selected','wrong');
+        gameSelected = [];
+      }, 600);
+    }
+  }
+}
+document.getElementById('game-restart').addEventListener('click', startMatchGame);
+startMatchGame();
+
+// 5-2. 4지선다
+const choiceQEl = document.getElementById('choice-q');
+const choiceOptEl = document.getElementById('choice-options');
+const choiceScoreEl = document.getElementById('choice-score');
+let choiceOrder = [];
+let choiceIdx = 0;
+let choiceScore = 0, choiceTotal = 0;
+let choiceAnswered = false;
+
+function shuffleArr(arr){
+  const a = [...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function startChoiceGame(){
+  choiceOrder = shuffleArr(ALL.map((_,i)=>i));
+  choiceIdx = 0; choiceScore = 0; choiceTotal = 0;
+  renderChoice();
+}
+
+function renderChoice(){
+  choiceAnswered = false;
+  const w = ALL[choiceOrder[choiceIdx]];
+  choiceQEl.textContent = w.ko;
+  const correct = primaryLabel(w.th);
+  const distractors = shuffleArr(ALL.filter(x=>x!==w).map(x=>primaryLabel(x.th)))
+    .filter(label => label !== correct)
+    .slice(0,3);
+  const options = shuffleArr([correct, ...distractors]);
+  choiceOptEl.innerHTML = options.map(opt=>`<button class="choice-opt" data-answer="${opt===correct ? 'correct':'wrong'}">${opt}</button>`).join('');
+  choiceOptEl.querySelectorAll('.choice-opt').forEach(btn=>{
+    btn.addEventListener('click', onChoiceClick);
+  });
+  choiceScoreEl.textContent = `맞은 개수 ${choiceScore} / ${choiceTotal}`;
+}
+
+function onChoiceClick(e){
+  if(choiceAnswered) return;
+  choiceAnswered = true;
+  choiceTotal++;
+  const picked = e.currentTarget;
+  const isRight = picked.dataset.answer === 'correct';
+  if(isRight) choiceScore++;
+  choiceOptEl.querySelectorAll('.choice-opt').forEach(btn=>{
+    btn.disabled = true;
+    if(btn.dataset.answer === 'correct') btn.classList.add('correct');
+    else if(btn === picked) btn.classList.add('wrong');
+  });
+  choiceScoreEl.textContent = `맞은 개수 ${choiceScore} / ${choiceTotal}`;
+  setTimeout(()=>{
+    choiceIdx = (choiceIdx+1) % choiceOrder.length;
+    if(choiceIdx === 0) choiceOrder = shuffleArr(ALL.map((_,i)=>i));
+    renderChoice();
+  }, 900);
+}
+document.getElementById('choice-restart').addEventListener('click', startChoiceGame);
+startChoiceGame();
+
+// 5-3. 타이핑 챌린지
+const typingTimerEl = document.getElementById('typing-timer');
+const typingQEl = document.getElementById('typing-q');
+const typingInputEl = document.getElementById('typing-input');
+const typingFeedbackEl = document.getElementById('typing-feedback');
+const typingScoreEl = document.getElementById('typing-score');
+const typingResultEl = document.getElementById('typing-result');
+let typingTimeLeft = 60;
+let typingTimerId = null;
+let typingScore = 0;
+let typingWord = null;
+let typingRunning = false;
+
+function typingNextWord(){
+  typingWord = ALL[Math.floor(Math.random()*ALL.length)];
+  typingQEl.textContent = typingWord.ko;
+  typingInputEl.value = '';
+  typingFeedbackEl.textContent = '';
+}
+
+function startTypingGame(){
+  clearInterval(typingTimerId);
+  typingTimeLeft = 60;
+  typingScore = 0;
+  typingRunning = true;
+  typingResultEl.textContent = '';
+  typingInputEl.disabled = false;
+  typingScoreEl.textContent = `맞은 개수 ${typingScore}`;
+  typingTimerEl.textContent = `${typingTimeLeft}초`;
+  typingNextWord();
+  typingInputEl.focus();
+  typingTimerId = setInterval(()=>{
+    typingTimeLeft--;
+    typingTimerEl.textContent = `${typingTimeLeft}초`;
+    if(typingTimeLeft <= 0) endTypingGame();
+  }, 1000);
+}
+
+function endTypingGame(){
+  clearInterval(typingTimerId);
+  typingRunning = false;
+  typingInputEl.disabled = true;
+  typingResultEl.textContent = `⏰ 종료! 최종 점수: ${typingScore}개`;
+}
+
+typingInputEl.addEventListener('keydown', e=>{
+  if(e.key !== 'Enter' || !typingRunning) return;
+  e.preventDefault();
+  const ok = isCorrect(typingInputEl.value, typingWord.th);
+  if(ok){
+    typingScore++;
+    typingFeedbackEl.textContent = '정답! 🎉';
+    typingFeedbackEl.className = 'quiz-feedback good';
+  } else {
+    typingFeedbackEl.textContent = `정답: ${typingWord.th.replace(/\n/g,' / ')}`;
+    typingFeedbackEl.className = 'quiz-feedback bad';
+  }
+  typingScoreEl.textContent = `맞은 개수 ${typingScore}`;
+  typingNextWord();
+});
+document.getElementById('typing-restart').addEventListener('click', startTypingGame);
+typingQEl.textContent = '준비 완료! "다시 시작"을 눌러 60초 타이핑 챌린지를 시작하세요';
+typingInputEl.disabled = true;
+</script>
+</body>
+</html>
