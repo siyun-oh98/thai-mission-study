@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>무신사 가격추적</title>
+<style>
+  :root {
+    --bg: #faf9f7;
+    --card: #ffffff;
+    --border: #e7e3dd;
+    --text: #2a2622;
+    --muted: #8a8378;
+    --accent: #c2410c;
+    --accent-bg: #fff1e8;
+    --record-bg: #fef3c7;
+    --record-text: #92400e;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    padding: 20px 16px 60px;
+  }
+  header {
+    max-width: 900px;
+    margin: 0 auto 18px;
+  }
+  h1 {
+    font-size: 1.4rem;
+    margin: 0 0 4px;
+    letter-spacing: -0.01em;
+  }
+  .sub {
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .status {
+    padding: 12px 14px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 14px;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .grid {
+    display: grid;
+    gap: 10px;
+  }
+  .row {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+  }
+  .row.record {
+    background: var(--record-bg);
+    border-color: #f3d999;
+  }
+  .name {
+    font-size: 0.92rem;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+  .brand {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-bottom: 3px;
+  }
+  .badge {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: var(--record-text);
+    color: #fff;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .prices {
+    text-align: right;
+    white-space: nowrap;
+  }
+  .price {
+    font-size: 1.05rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .discount {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 0.85rem;
+    margin-right: 4px;
+  }
+  .lowest {
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-top: 2px;
+    font-variant-numeric: tabular-nums;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  @media (min-width: 640px) {
+    .grid.tablemode .row { display: none; }
+    table { display: table; }
+  }
+  table { display: none; }
+  #loading, #error {
+    text-align: center;
+    color: var(--muted);
+    padding: 40px 0;
+  }
+  #error { color: #b42318; display: none; }
+  footer {
+    max-width: 900px;
+    margin: 24px auto 0;
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🛒 무신사 가격추적</h1>
+    <div class="sub" id="updated">불러오는 중...</div>
+  </header>
+  <div id="loading">불러오는 중...</div>
+  <div id="error">데이터를 불러오지 못했습니다. 새로고침 해보세요.</div>
+  <div class="grid" id="list"></div>
+</div>
+<footer>매일 저녁 자동으로 가격 확인 · 역대 최저가 도달 시 알림</footer>
+
+<script>
+function won(n) { return Number(n).toLocaleString('ko-KR') + '원'; }
+
+fetch('./data/prices.json', { cache: 'no-store' })
+  .then(r => {
+    if (!r.ok) throw new Error('fetch failed');
+    return r.json();
+  })
+  .then(data => {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('updated').textContent = '마지막 갱신: ' + (data.updated_at || '알 수 없음');
+
+    const items = (data.items || []).slice().sort((a, b) => {
+      const aRecord = a.price <= (a.lowest_price ?? a.price) ? 1 : 0;
+      const bRecord = b.price <= (b.lowest_price ?? b.price) ? 1 : 0;
+      if (aRecord !== bRecord) return bRecord - aRecord;
+      return (b.discount_pct || 0) - (a.discount_pct || 0);
+    });
+
+    const list = document.getElementById('list');
+    items.forEach(item => {
+      const isRecord = item.lowest_price != null && item.price <= item.lowest_price;
+      const a = document.createElement('a');
+      a.className = 'row' + (isRecord ? ' record' : '');
+      a.href = item.url;
+      a.target = '_blank';
+      a.rel = 'noopener';
+
+      const left = document.createElement('div');
+      const brand = document.createElement('div');
+      brand.className = 'brand';
+      brand.textContent = item.brand || '';
+      const name = document.createElement('div');
+      name.className = 'name';
+      name.textContent = item.name;
+      if (isRecord) {
+        const b = document.createElement('span');
+        b.className = 'badge';
+        b.textContent = '역대가';
+        name.appendChild(b);
+      }
+      left.appendChild(brand);
+      left.appendChild(name);
+
+      const right = document.createElement('div');
+      right.className = 'prices';
+      const priceLine = document.createElement('div');
+      if (item.discount_pct) {
+        const d = document.createElement('span');
+        d.className = 'discount';
+        d.textContent = item.discount_pct + '%';
+        priceLine.appendChild(d);
+      }
+      const p = document.createElement('span');
+      p.className = 'price';
+      p.textContent = won(item.price);
+      priceLine.appendChild(p);
+      right.appendChild(priceLine);
+
+      if (item.lowest_price != null) {
+        const lw = document.createElement('div');
+        lw.className = 'lowest';
+        lw.textContent = '역대가 ' + won(item.lowest_price);
+        right.appendChild(lw);
+      }
+
+      a.appendChild(left);
+      a.appendChild(right);
+      list.appendChild(a);
+    });
+  })
+  .catch(() => {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('error').style.display = 'block';
+  });
+</script>
+</body>
+</html>
