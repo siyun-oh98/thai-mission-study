@@ -1,0 +1,33 @@
+name: Musinsa Price Check
+
+on:
+  schedule:
+    - cron: '7 10 * * *' # ~19:07 KST daily (off the exact hour — GitHub Actions docs warn
+                          # that :00 crons are the most congested minute and are more likely
+                          # to be delayed or dropped; observed on 2026-09-20, this cron never
+                          # fired at all on its first scheduled day at '0 10 * * *')
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run wishlist sync + price check
+        run: node musinsa-price-tracker/scripts/check-and-update.js
+
+      - name: Commit changes
+        run: |
+          git config user.name "musinsa-price-bot"
+          git config user.email "actions@github.com"
+          git add musinsa-price-tracker/data/prices.json musinsa-price-tracker/data/last_run_summary.json
+          git diff --cached --quiet || git commit -m "musinsa price check: $(date -u +%Y-%m-%d)"
+          git push
