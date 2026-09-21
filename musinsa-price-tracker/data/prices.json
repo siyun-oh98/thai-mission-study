@@ -1,23 +1,23 @@
 {
-  "updated_at": "2026-09-20",
+  "updated_at": "2026-09-21",
   "items": [
     {
       "id": "3758305",
       "name": "릴렉스드 워시드 포플린 셔츠 [블랙]",
       "brand": "무신사 스탠다드",
       "url": "https://www.musinsa.com/products/3758305",
-      "price": 39900,
-      "lowest_price": 39900,
-      "discount_pct": 0
+      "price": 31890,
+      "lowest_price": 31890,
+      "discount_pct": 20
     },
     {
       "id": "1989228",
       "name": "[쿨탠다드] 와이드 히든 밴딩 슬랙스 [블랙]",
       "brand": "무신사 스탠다드",
       "url": "https://www.musinsa.com/products/1989228",
-      "price": 59900,
+      "price": 50890,
       "lowest_price": 38890,
-      "discount_pct": 0
+      "discount_pct": 15
     },
     {
       "id": "5964805",
@@ -51,36 +51,36 @@
       "name": "반다나 스카프 러닝 멀티스카프 통기성 메쉬 두건 URH - A - 004 - BREEZE - BK",
       "brand": "유알에이치",
       "url": "https://www.musinsa.com/products/5224144",
-      "price": 26730,
-      "lowest_price": 26730,
-      "discount_pct": 19
+      "price": 24750,
+      "lowest_price": 24750,
+      "discount_pct": 25
     },
     {
       "id": "4052612",
       "name": "울 블렌드 와이드 히든 밴딩 슬랙스 [차콜 그레이]",
       "brand": "무신사 스탠다드",
       "url": "https://www.musinsa.com/products/4052612",
-      "price": 89900,
-      "lowest_price": 85390,
-      "discount_pct": 0
+      "price": 80990,
+      "lowest_price": 80990,
+      "discount_pct": 10
     },
     {
       "id": "4134331",
       "name": "울 블렌드 릴렉스드 베이식 블레이저 [차콜 그레이]",
       "brand": "무신사 스탠다드",
       "url": "https://www.musinsa.com/products/4134331",
-      "price": 159900,
-      "lowest_price": 151890,
-      "discount_pct": 0
+      "price": 127890,
+      "lowest_price": 127890,
+      "discount_pct": 20
     },
     {
       "id": "6111131",
       "name": "DEN765 Raw Routine Wide Chino (Olive Charcoal)",
       "brand": "덴메이드",
       "url": "https://www.musinsa.com/products/6111131",
-      "price": 76900,
-      "lowest_price": 76900,
-      "discount_pct": 22
+      "price": 73060,
+      "lowest_price": 73060,
+      "discount_pct": 25
     },
     {
       "id": "6916936",
@@ -132,9 +132,9 @@
       "name": "[시티 레저] 트레일 기어 팬츠 [그레이]",
       "brand": "무신사 스탠다드",
       "url": "https://www.musinsa.com/products/6908818",
-      "price": 89890,
-      "lowest_price": 89890,
-      "discount_pct": 10
+      "price": 84890,
+      "lowest_price": 84890,
+      "discount_pct": 15
     },
     {
       "id": "6985518",
@@ -150,9 +150,9 @@
       "name": "[스토커즈 컬래버] [빅토리아 울] 미니멀 리브드 쿼터 집 스웨터 [미디엄 그레이]",
       "brand": "무신사 스탠다드",
       "url": "https://www.musinsa.com/products/6660440",
-      "price": 79900,
-      "lowest_price": 79900,
-      "discount_pct": 0
+      "price": 75890,
+      "lowest_price": 75890,
+      "discount_pct": 5
     }
   ]
 }
