@@ -1,5 +1,6 @@
 {
-  "updated_at": "2026-09-22",
+  "updated_at": "2026-09-23",
+  "checked_at": "2026-09-23T14:29:52.623Z",
   "items": [
     {
       "id": "3758305",
@@ -8,7 +9,8 @@
       "url": "https://www.musinsa.com/products/3758305",
       "price": 31890,
       "lowest_price": 31890,
-      "discount_pct": 20
+      "discount_pct": 20,
+      "record_low_date": null
     },
     {
       "id": "1989228",
@@ -17,7 +19,8 @@
       "url": "https://www.musinsa.com/products/1989228",
       "price": 50890,
       "lowest_price": 38890,
-      "discount_pct": 15
+      "discount_pct": 15,
+      "record_low_date": null
     },
     {
       "id": "5964805",
@@ -26,7 +29,8 @@
       "url": "https://www.musinsa.com/products/5964805",
       "price": 143100,
       "lowest_price": 143100,
-      "discount_pct": 10
+      "discount_pct": 10,
+      "record_low_date": null
     },
     {
       "id": "6104960",
@@ -35,7 +39,8 @@
       "url": "https://www.musinsa.com/products/6104960",
       "price": 15900,
       "lowest_price": 15900,
-      "discount_pct": 0
+      "discount_pct": 0,
+      "record_low_date": null
     },
     {
       "id": "4672727",
@@ -44,7 +49,8 @@
       "url": "https://www.musinsa.com/products/4672727",
       "price": 42590,
       "lowest_price": 34090,
-      "discount_pct": 7
+      "discount_pct": 7,
+      "record_low_date": null
     },
     {
       "id": "5224144",
@@ -53,7 +59,8 @@
       "url": "https://www.musinsa.com/products/5224144",
       "price": 24750,
       "lowest_price": 24750,
-      "discount_pct": 25
+      "discount_pct": 25,
+      "record_low_date": null
     },
     {
       "id": "4052612",
@@ -62,7 +69,8 @@
       "url": "https://www.musinsa.com/products/4052612",
       "price": 80990,
       "lowest_price": 80990,
-      "discount_pct": 10
+      "discount_pct": 10,
+      "record_low_date": null
     },
     {
       "id": "4134331",
@@ -71,7 +79,8 @@
       "url": "https://www.musinsa.com/products/4134331",
       "price": 127890,
       "lowest_price": 127890,
-      "discount_pct": 20
+      "discount_pct": 20,
+      "record_low_date": null
     },
     {
       "id": "6111131",
@@ -80,7 +89,8 @@
       "url": "https://www.musinsa.com/products/6111131",
       "price": 73060,
       "lowest_price": 73060,
-      "discount_pct": 25
+      "discount_pct": 25,
+      "record_low_date": null
     },
     {
       "id": "6916936",
@@ -89,43 +99,48 @@
       "url": "https://www.musinsa.com/products/6916936",
       "price": 150000,
       "lowest_price": 150000,
-      "discount_pct": 0
+      "discount_pct": 0,
+      "record_low_date": null
     },
     {
       "id": "6719778",
       "name": "[시티 레저] 메시 플리스 후디드 집업 [라이트 그레이]",
       "brand": "무신사 스탠다드",
       "url": "https://www.musinsa.com/products/6719778",
-      "price": 53890,
+      "price": 56890,
       "lowest_price": 53890,
-      "discount_pct": 10
+      "discount_pct": 5,
+      "record_low_date": null
     },
     {
       "id": "6364511",
       "name": "[시티 레저] 그리드 폴라 플리스 바라클라바 후디드 집업 [라이트 그레이]",
       "brand": "무신사 스탠다드",
       "url": "https://www.musinsa.com/products/6364511",
-      "price": 62890,
+      "price": 66390,
       "lowest_price": 62890,
-      "discount_pct": 10
+      "discount_pct": 5,
+      "record_low_date": null
     },
     {
       "id": "6719783",
       "name": "[시티 레저] 메시 플리스 크루 넥 긴소매 티셔츠 [라이트 그레이]",
       "brand": "무신사 스탠다드",
       "url": "https://www.musinsa.com/products/6719783",
-      "price": 35890,
+      "price": 37890,
       "lowest_price": 35890,
-      "discount_pct": 10
+      "discount_pct": 5,
+      "record_low_date": null
     },
     {
       "id": "6701388",
       "name": "[시티 레저] 트레일 긴소매 티셔츠 [브라운]",
       "brand": "무신사 스탠다드",
       "url": "https://www.musinsa.com/products/6701388",
-      "price": 35890,
+      "price": 37790,
       "lowest_price": 35890,
-      "discount_pct": 10
+      "discount_pct": 5,
+      "record_low_date": null
     },
     {
       "id": "6908818",
@@ -134,16 +149,18 @@
       "url": "https://www.musinsa.com/products/6908818",
       "price": 84890,
       "lowest_price": 84890,
-      "discount_pct": 15
+      "discount_pct": 15,
+      "record_low_date": null
     },
     {
       "id": "6985518",
       "name": "[시티 레저] 트레일 티셔츠 [그레이]",
       "brand": "무신사 스탠다드",
       "url": "https://www.musinsa.com/products/6985518",
-      "price": 26890,
+      "price": 26910,
       "lowest_price": 26890,
-      "discount_pct": 10
+      "discount_pct": 10,
+      "record_low_date": null
     },
     {
       "id": "6660440",
@@ -152,7 +169,8 @@
       "url": "https://www.musinsa.com/products/6660440",
       "price": 75890,
       "lowest_price": 75890,
-      "discount_pct": 5
+      "discount_pct": 5,
+      "record_low_date": null
     }
   ]
 }
