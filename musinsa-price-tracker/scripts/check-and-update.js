@@ -32,20 +32,36 @@ async function main() {
   const current = JSON.parse(fs.readFileSync(PRICES_PATH, 'utf-8'));
   const byId = new Map(current.items.map((it) => [it.id, it]));
   const liveIds = new Set();
+  const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' }); // YYYY-MM-DD
+
+  // The workflow may run several times a day (backup crons). Carry today's earlier
+  // added/removed over so a later run doesn't wipe what an earlier one found.
+  let prevSummary = null;
+  try {
+    prevSummary = JSON.parse(fs.readFileSync(SUMMARY_PATH, 'utf-8'));
+  } catch (_) {}
+  const sameDay = prevSummary && prevSummary.updated_at === today;
 
   const nextItems = [];
-  const recordLows = [];
 
   for (const g of live) {
     const id = String(g.goodsNo);
     liveIds.add(id);
     const finalPrice = g.finalPrice;
     const existing = byId.get(id);
-    const prevLowest = existing ? existing.lowest_price : finalPrice;
-    const lowest = Math.min(prevLowest, finalPrice);
-    const isRecordLow = finalPrice <= prevLowest;
 
-    const item = {
+    let lowest = finalPrice;
+    let recordLowDate = null;
+    if (existing) {
+      const prevLowest = existing.lowest_price ?? finalPrice;
+      lowest = Math.min(prevLowest, finalPrice);
+      recordLowDate = existing.record_low_date || null;
+      // A record low means the price actually dropped BELOW the previous lowest —
+      // an unchanged price (equal to the lowest) is not a new record.
+      if (finalPrice < prevLowest) recordLowDate = today;
+    }
+
+    nextItems.push({
       id,
       name: g.goodsName,
       brand: g.brandName,
@@ -53,22 +69,38 @@ async function main() {
       price: finalPrice,
       lowest_price: lowest,
       discount_pct: g.finalDiscount || 0,
-    };
-    nextItems.push(item);
-    if (isRecordLow) recordLows.push(item);
+      record_low_date: recordLowDate,
+    });
   }
 
-  const removed = current.items.filter((it) => !liveIds.has(it.id));
-  const added = nextItems.filter((it) => !byId.has(it.id));
+  const brief = (i) => ({ id: i.id, name: i.name });
+  const mergeById = (a, b) => {
+    const m = new Map();
+    [...a, ...b].forEach((i) => m.set(i.id, i));
+    return [...m.values()];
+  };
 
-  const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' }); // YYYY-MM-DD
-  const out = { updated_at: today, items: nextItems };
+  let removed = current.items.filter((it) => !liveIds.has(it.id)).map(brief);
+  let added = nextItems.filter((it) => !byId.has(it.id)).map(brief);
+  if (sameDay) {
+    added = mergeById(prevSummary.added || [], added).filter((i) => liveIds.has(i.id));
+    removed = mergeById(prevSummary.removed || [], removed).filter((i) => !liveIds.has(i.id));
+  }
+
+  // Record lows set today (by this run or an earlier run today), only while the
+  // price is still at that record.
+  const recordLows = nextItems.filter(
+    (i) => i.record_low_date === today && i.price === i.lowest_price
+  );
+
+  const out = { updated_at: today, checked_at: new Date().toISOString(), items: nextItems };
   fs.writeFileSync(PRICES_PATH, JSON.stringify(out, null, 2) + '\n');
 
   const summary = {
     updated_at: today,
-    added: added.map((i) => ({ id: i.id, name: i.name })),
-    removed: removed.map((i) => ({ id: i.id, name: i.name })),
+    checked_at: out.checked_at,
+    added,
+    removed,
     record_lows: recordLows.map((i) => ({
       id: i.id,
       name: i.name,

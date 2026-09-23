@@ -2,14 +2,21 @@ name: Musinsa Price Check
 
 on:
   schedule:
-    - cron: '7 10 * * *' # ~19:07 KST daily (off the exact hour — GitHub Actions docs warn
-                          # that :00 crons are the most congested minute and are more likely
-                          # to be delayed or dropped; observed on 2026-09-20, this cron never
-                          # fired at all on its first scheduled day at '0 10 * * *')
+    # GitHub often delays scheduled runs by hours on low-activity repos (observed
+    # 2026-09-21/22: 10:07 UTC cron fired at 16:26 / 14:46 UTC), and :00 is the most
+    # congested minute. Run several times a day so at least one lands before the
+    # 19:20 KST alert routine; the script merges same-day runs idempotently.
+    - cron: '17 3 * * *'  # ~12:17 KST
+    - cron: '37 6 * * *'  # ~15:37 KST
+    - cron: '7 9 * * *'   # ~18:07 KST
   workflow_dispatch: {}
 
 permissions:
   contents: write
+
+concurrency:
+  group: musinsa-price-check
+  cancel-in-progress: false
 
 jobs:
   check:
@@ -29,5 +36,10 @@ jobs:
           git config user.name "musinsa-price-bot"
           git config user.email "actions@github.com"
           git add musinsa-price-tracker/data/prices.json musinsa-price-tracker/data/last_run_summary.json
-          git diff --cached --quiet || git commit -m "musinsa price check: $(date -u +%Y-%m-%d)"
+          if git diff --cached --quiet; then
+            echo "no changes"
+            exit 0
+          fi
+          git commit -m "musinsa price check: $(TZ=Asia/Seoul date +%Y-%m-%d)"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
           git push

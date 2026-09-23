@@ -150,6 +150,11 @@
 
 <script>
 function won(n) { return Number(n).toLocaleString('ko-KR') + '원'; }
+// Highlight only items whose price dropped below the previous lowest on the latest check
+// day — an unchanged price that merely equals the lowest is not a new record.
+function isNewRecord(item, day) {
+  return !!item.record_low_date && item.record_low_date === day && item.price === item.lowest_price;
+}
 
 fetch('./data/prices.json', { cache: 'no-store' })
   .then(r => {
@@ -161,15 +166,15 @@ fetch('./data/prices.json', { cache: 'no-store' })
     document.getElementById('updated').textContent = '마지막 갱신: ' + (data.updated_at || '알 수 없음');
 
     const items = (data.items || []).slice().sort((a, b) => {
-      const aRecord = a.price <= (a.lowest_price ?? a.price) ? 1 : 0;
-      const bRecord = b.price <= (b.lowest_price ?? b.price) ? 1 : 0;
+      const aRecord = isNewRecord(a, data.updated_at) ? 1 : 0;
+      const bRecord = isNewRecord(b, data.updated_at) ? 1 : 0;
       if (aRecord !== bRecord) return bRecord - aRecord;
       return (b.discount_pct || 0) - (a.discount_pct || 0);
     });
 
     const list = document.getElementById('list');
     items.forEach(item => {
-      const isRecord = item.lowest_price != null && item.price <= item.lowest_price;
+      const isRecord = isNewRecord(item, data.updated_at);
       const a = document.createElement('a');
       a.className = 'row' + (isRecord ? ' record' : '');
       a.href = item.url;
@@ -186,7 +191,7 @@ fetch('./data/prices.json', { cache: 'no-store' })
       if (isRecord) {
         const b = document.createElement('span');
         b.className = 'badge';
-        b.textContent = '역대가';
+        b.textContent = '역대가 갱신';
         name.appendChild(b);
       }
       left.appendChild(brand);
