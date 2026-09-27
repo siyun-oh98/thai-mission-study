@@ -1,7 +1,15 @@
 {
-  "updated_at": "2026-09-26",
-  "checked_at": "2026-09-26T13:43:42.290Z",
+  "updated_at": "2026-09-27",
+  "checked_at": "2026-09-27T09:16:21.254Z",
   "added": [],
   "removed": [],
-  "record_lows": []
+  "record_lows": [
+    {
+      "id": "6701388",
+      "name": "[시티 레저] 트레일 긴소매 티셔츠 [브라운]",
+      "brand": "무신사 스탠다드",
+      "price": 29890,
+      "url": "https://www.musinsa.com/products/6701388"
+    }
+  ]
 }
