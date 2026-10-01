@@ -1,7 +1,16 @@
 {
   "updated_at": "2026-10-01",
-  "checked_at": "2026-09-30T15:52:42.743Z",
-  "added": [],
+  "checked_at": "2026-10-01T10:09:00.148Z",
+  "added": [
+    {
+      "id": "7362621",
+      "name": "멘즈 이스머스 라인드 재킷 / 20445R7"
+    },
+    {
+      "id": "7269944",
+      "name": "VINTAGE FLEECE PULLOVER_GRAY"
+    }
+  ],
   "removed": [],
   "record_lows": []
 }

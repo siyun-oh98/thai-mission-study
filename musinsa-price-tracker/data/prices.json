@@ -1,7 +1,27 @@
 {
   "updated_at": "2026-10-01",
-  "checked_at": "2026-09-30T15:52:42.743Z",
+  "checked_at": "2026-10-01T10:09:00.148Z",
   "items": [
+    {
+      "id": "7362621",
+      "name": "멘즈 이스머스 라인드 재킷 / 20445R7",
+      "brand": "파타고니아",
+      "url": "https://www.musinsa.com/products/7362621",
+      "price": 329000,
+      "lowest_price": 329000,
+      "discount_pct": 0,
+      "record_low_date": null
+    },
+    {
+      "id": "7269944",
+      "name": "VINTAGE FLEECE PULLOVER_GRAY",
+      "brand": "아웃스탠딩",
+      "url": "https://www.musinsa.com/products/7269944",
+      "price": 88200,
+      "lowest_price": 88200,
+      "discount_pct": 10,
+      "record_low_date": null
+    },
     {
       "id": "3758305",
       "name": "릴렉스드 워시드 포플린 셔츠 [블랙]",
