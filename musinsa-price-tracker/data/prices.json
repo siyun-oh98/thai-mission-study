@@ -1,6 +1,6 @@
 {
   "updated_at": "2026-10-14",
-  "checked_at": "2026-10-13T16:54:34.975Z",
+  "checked_at": "2026-10-14T08:43:40.698Z",
   "items": [
     {
       "id": "7362621",
@@ -27,9 +27,9 @@
       "name": "릴렉스드 워시드 포플린 셔츠 [블랙]",
       "brand": "무신사 스탠다드",
       "url": "https://www.musinsa.com/products/3758305",
-      "price": 33890,
+      "price": 27990,
       "lowest_price": 27990,
-      "discount_pct": 15,
+      "discount_pct": 30,
       "record_low_date": "2026-10-05"
     },
     {
@@ -167,10 +167,10 @@
       "name": "[시티 레저] 트레일 티셔츠 [그레이]",
       "brand": "무신사 스탠다드",
       "url": "https://www.musinsa.com/products/6985518",
-      "price": 29900,
-      "lowest_price": 26890,
-      "discount_pct": 0,
-      "record_low_date": null
+      "price": 23890,
+      "lowest_price": 23890,
+      "discount_pct": 20,
+      "record_low_date": "2026-10-14"
     },
     {
       "id": "6660440",
