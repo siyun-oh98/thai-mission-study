@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-10-18",
-  "checked_at": "2026-10-18T13:12:34.324Z",
+  "updated_at": "2026-10-19",
+  "checked_at": "2026-10-19T08:53:37.367Z",
   "items": [
     {
       "id": "7362621",
@@ -97,10 +97,10 @@
       "name": "울 블렌드 릴렉스드 베이식 블레이저 [차콜 그레이]",
       "brand": "무신사 스탠다드",
       "url": "https://www.musinsa.com/products/4134331",
-      "price": 135890,
-      "lowest_price": 127890,
-      "discount_pct": 15,
-      "record_low_date": null
+      "price": 111890,
+      "lowest_price": 111890,
+      "discount_pct": 30,
+      "record_low_date": "2026-10-19"
     },
     {
       "id": "6111131",
@@ -114,7 +114,7 @@
     },
     {
       "id": "6916936",
-      "name": "[5%적립금] 슬레이트 풀오버_LD0376200",
+      "name": "슬레이트 풀오버_LD0376200",
       "brand": "살로몬",
       "url": "https://www.musinsa.com/products/6916936",
       "price": 150000,
