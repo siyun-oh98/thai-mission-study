@@ -1,7 +1,47 @@
 {
   "updated_at": "2026-11-05",
-  "checked_at": "2026-11-05T10:56:42.291Z",
+  "checked_at": "2026-11-05T14:54:57.943Z",
   "items": [
+    {
+      "id": "6979608",
+      "name": "[크롭] 라이트 후드 집업_퍼플 [레이어드티 선택]",
+      "brand": "키뮤어",
+      "url": "https://www.musinsa.com/products/6979608",
+      "price": 55500,
+      "lowest_price": 55500,
+      "discount_pct": 25,
+      "record_low_date": null
+    },
+    {
+      "id": "6276975",
+      "name": "써모메쉬 오버핏 숏슬리브 (4color)",
+      "brand": "무신사 스탠다드 스포츠",
+      "url": "https://www.musinsa.com/products/6276975",
+      "price": 49900,
+      "lowest_price": 49900,
+      "discount_pct": 17,
+      "record_low_date": null
+    },
+    {
+      "id": "6276985",
+      "name": "[굿펠로우] 써모메쉬 오버핏 후드풀오버 (4color)",
+      "brand": "무신사 스탠다드 스포츠",
+      "url": "https://www.musinsa.com/products/6276985",
+      "price": 67900,
+      "lowest_price": 67900,
+      "discount_pct": 15,
+      "record_low_date": null
+    },
+    {
+      "id": "6696695",
+      "name": "[굿펠로우] 써모메쉬 비니 (4color)",
+      "brand": "무신사 스탠다드 스포츠",
+      "url": "https://www.musinsa.com/products/6696695",
+      "price": 22140,
+      "lowest_price": 22140,
+      "discount_pct": 15,
+      "record_low_date": null
+    },
     {
       "id": "7362621",
       "name": "멘즈 이스머스 라인드 재킷 / 20445R7",
