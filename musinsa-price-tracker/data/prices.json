@@ -1,6 +1,6 @@
 {
   "updated_at": "2026-11-12",
-  "checked_at": "2026-11-11T17:03:40.116Z",
+  "checked_at": "2026-11-11T16:51:39.270Z",
   "items": [
     {
       "id": "6979608",
@@ -10,7 +10,9 @@
       "price": 55500,
       "lowest_price": 48100,
       "discount_pct": 25,
-      "record_low_date": "2026-11-06"
+      "record_low_date": "2026-11-06",
+      "coupon_price": 55500,
+      "estimated_price_with_mileage": 51615
     },
     {
       "id": "6276975",
@@ -20,7 +22,9 @@
       "price": 49900,
       "lowest_price": 49900,
       "discount_pct": 17,
-      "record_low_date": null
+      "record_low_date": null,
+      "coupon_price": 49900,
+      "estimated_price_with_mileage": 46407
     },
     {
       "id": "6276985",
@@ -30,7 +34,9 @@
       "price": 67900,
       "lowest_price": 67900,
       "discount_pct": 15,
-      "record_low_date": null
+      "record_low_date": null,
+      "coupon_price": 67900,
+      "estimated_price_with_mileage": 63147
     },
     {
       "id": "6696695",
@@ -40,7 +46,9 @@
       "price": 13900,
       "lowest_price": 13900,
       "discount_pct": 46,
-      "record_low_date": "2026-11-11"
+      "record_low_date": "2026-11-11",
+      "coupon_price": 13900,
+      "estimated_price_with_mileage": 12927
     },
     {
       "id": "7362621",
@@ -50,7 +58,9 @@
       "price": 329000,
       "lowest_price": 329000,
       "discount_pct": 0,
-      "record_low_date": null
+      "record_low_date": null,
+      "coupon_price": 329000,
+      "estimated_price_with_mileage": 305970
     },
     {
       "id": "7269944",
@@ -60,7 +70,9 @@
       "price": 88200,
       "lowest_price": 88200,
       "discount_pct": 10,
-      "record_low_date": null
+      "record_low_date": null,
+      "coupon_price": 88200,
+      "estimated_price_with_mileage": 82026
     },
     {
       "id": "3758305",
@@ -70,7 +82,9 @@
       "price": 27890,
       "lowest_price": 25990,
       "discount_pct": 30,
-      "record_low_date": "2026-10-23"
+      "record_low_date": "2026-10-23",
+      "coupon_price": 27890,
+      "estimated_price_with_mileage": 25938
     },
     {
       "id": "1989228",
@@ -80,7 +94,9 @@
       "price": 59900,
       "lowest_price": 38890,
       "discount_pct": 0,
-      "record_low_date": null
+      "record_low_date": null,
+      "coupon_price": 59900,
+      "estimated_price_with_mileage": 55707
     },
     {
       "id": "5964805",
@@ -90,7 +106,9 @@
       "price": 151050,
       "lowest_price": 133600,
       "discount_pct": 5,
-      "record_low_date": "2026-11-01"
+      "record_low_date": "2026-11-01",
+      "coupon_price": 159000,
+      "estimated_price_with_mileage": 147870
     },
     {
       "id": "6104960",
@@ -100,7 +118,9 @@
       "price": 15900,
       "lowest_price": 15900,
       "discount_pct": 0,
-      "record_low_date": null
+      "record_low_date": null,
+      "coupon_price": 15900,
+      "estimated_price_with_mileage": 14787
     },
     {
       "id": "4672727",
@@ -110,7 +130,9 @@
       "price": 45900,
       "lowest_price": 34090,
       "discount_pct": 0,
-      "record_low_date": null
+      "record_low_date": null,
+      "coupon_price": 45900,
+      "estimated_price_with_mileage": 42687
     },
     {
       "id": "5224144",
@@ -120,7 +142,9 @@
       "price": 29700,
       "lowest_price": 24750,
       "discount_pct": 10,
-      "record_low_date": null
+      "record_low_date": null,
+      "coupon_price": 29700,
+      "estimated_price_with_mileage": 27621
     },
     {
       "id": "4052612",
@@ -130,7 +154,9 @@
       "price": 80890,
       "lowest_price": 58390,
       "discount_pct": 10,
-      "record_low_date": "2026-10-28"
+      "record_low_date": "2026-10-28",
+      "coupon_price": 80890,
+      "estimated_price_with_mileage": 75228
     },
     {
       "id": "4134331",
@@ -140,7 +166,9 @@
       "price": 135890,
       "lowest_price": 102290,
       "discount_pct": 15,
-      "record_low_date": "2026-11-09"
+      "record_low_date": "2026-11-09",
+      "coupon_price": 135890,
+      "estimated_price_with_mileage": 126378
     },
     {
       "id": "6111131",
@@ -150,7 +178,9 @@
       "price": 73060,
       "lowest_price": 73060,
       "discount_pct": 25,
-      "record_low_date": null
+      "record_low_date": null,
+      "coupon_price": 73060,
+      "estimated_price_with_mileage": 67946
     },
     {
       "id": "6719778",
@@ -160,7 +190,9 @@
       "price": 56890,
       "lowest_price": 41990,
       "discount_pct": 5,
-      "record_low_date": "2026-10-23"
+      "record_low_date": "2026-10-23",
+      "coupon_price": 56890,
+      "estimated_price_with_mileage": 52908
     },
     {
       "id": "6364511",
@@ -170,7 +202,9 @@
       "price": 69900,
       "lowest_price": 62890,
       "discount_pct": 0,
-      "record_low_date": null
+      "record_low_date": null,
+      "coupon_price": 69900,
+      "estimated_price_with_mileage": 65007
     },
     {
       "id": "6908818",
@@ -180,7 +214,9 @@
       "price": 89890,
       "lowest_price": 84890,
       "discount_pct": 10,
-      "record_low_date": null
+      "record_low_date": null,
+      "coupon_price": 89890,
+      "estimated_price_with_mileage": 83598
     },
     {
       "id": "6985518",
@@ -190,7 +226,9 @@
       "price": 29900,
       "lowest_price": 23890,
       "discount_pct": 0,
-      "record_low_date": "2026-10-14"
+      "record_low_date": "2026-10-14",
+      "coupon_price": 29900,
+      "estimated_price_with_mileage": 27807
     },
     {
       "id": "6660440",
@@ -200,7 +238,9 @@
       "price": 75890,
       "lowest_price": 75890,
       "discount_pct": 5,
-      "record_low_date": null
+      "record_low_date": null,
+      "coupon_price": 75890,
+      "estimated_price_with_mileage": 70578
     }
   ]
 }

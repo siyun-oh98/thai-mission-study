@@ -219,6 +219,14 @@ fetch('./data/prices.json', { cache: 'no-store' })
         right.appendChild(lw);
       }
 
+      if (item.estimated_price_with_mileage != null) {
+        const est = document.createElement('div');
+        est.className = 'lowest';
+        est.textContent = '쿠폰+적립금 추정 ' + won(item.estimated_price_with_mileage);
+        est.title = '쿠폰적용가에서 적립금 7% 한도 적용을 추정한 값 — 실제 결제화면과 다를 수 있음';
+        right.appendChild(est);
+      }
+
       a.appendChild(left);
       a.appendChild(right);
       list.appendChild(a);

@@ -3,6 +3,19 @@
 // reconciles add/remove against data/prices.json, updates price/lowest_price/discount_pct,
 // and writes data/last_run_summary.json so the downstream Claude cloud routine can alert
 // on record-low prices without ever needing to reach musinsa.com itself.
+//
+// Coupon/mileage estimate (2026-11-12): if MUSINSA_COOKIE is set (a GitHub secret holding
+// an exported login session), each item's own product page is fetched with that cookie and
+// its embedded `goodsPrice.couponPrice` is read off — this is the real, logged-in coupon
+// price and matches what the site itself shows. Mileage (적립금) cannot be read this way —
+// Musinsa only exposes the member's actual applied mileage inside its mobile app, not on the
+// website in any form reachable by a logged-in page fetch. So `estimated_price_with_mileage`
+// is a rough ESTIMATE only: coupon price minus Musinsa's documented cap of 7% of the payment
+// amount (per the official FAQ — community reports suggest this may have changed to 10% or a
+// per-checkout value, so treat this number as approximate, not authoritative). It assumes the
+// member's mileage balance comfortably covers 7% of the price, which is true for ordinary
+// purchase sizes. If MUSINSA_COOKIE is absent, expired, or a given item's page fetch fails,
+// these two fields are simply left off that item rather than failing the whole run.
 
 const fs = require('fs');
 const path = require('path');
@@ -11,6 +24,27 @@ const FOLDER_ID = '405464';
 const DATA_DIR = path.join(__dirname, '..', 'data');
 const PRICES_PATH = path.join(DATA_DIR, 'prices.json');
 const SUMMARY_PATH = path.join(DATA_DIR, 'last_run_summary.json');
+const MILEAGE_CAP_RATE = 0.07; // documented cap; see note above — may be stale
+
+async function fetchCouponPrice(goodsNo, cookie) {
+  const url = `https://www.musinsa.com/products/${goodsNo}`;
+  const res = await fetch(url, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0',
+      Cookie: cookie,
+    },
+  });
+  if (!res.ok) throw new Error(`product page fetch failed: HTTP ${res.status}`);
+  const html = await res.text();
+  // goodsPrice has one nested object (optionPrices: {...}), so the brace matching
+  // must tolerate one level of nesting or it truncates mid-object (caught in testing).
+  const m = html.match(/"goodsPrice":(\{(?:[^{}]|\{[^{}]*\})*\})/);
+  if (!m) return null;
+  const obj = JSON.parse(m[1]);
+  const couponPrice = typeof obj.couponPrice === 'number' ? obj.couponPrice : obj.finalPrice;
+  if (typeof couponPrice !== 'number') return null;
+  return couponPrice;
+}
 
 async function fetchAllGoods() {
   let url = `https://like.musinsa.com/api2/like/like-page/v1/share/folders/${FOLDER_ID}/goods`;
@@ -27,12 +61,17 @@ async function fetchAllGoods() {
   return items;
 }
 
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
 async function main() {
   const live = await fetchAllGoods();
   const current = JSON.parse(fs.readFileSync(PRICES_PATH, 'utf-8'));
   const byId = new Map(current.items.map((it) => [it.id, it]));
   const liveIds = new Set();
   const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' }); // YYYY-MM-DD
+
+  const cookie = process.env.MUSINSA_COOKIE || '';
+  let couponFetchFailures = 0;
 
   // The workflow may run several times a day (backup crons). Carry today's earlier
   // added/removed over so a later run doesn't wipe what an earlier one found.
@@ -61,7 +100,7 @@ async function main() {
       if (finalPrice < prevLowest) recordLowDate = today;
     }
 
-    nextItems.push({
+    const item = {
       id,
       name: g.goodsName,
       brand: g.brandName,
@@ -70,7 +109,22 @@ async function main() {
       lowest_price: lowest,
       discount_pct: g.finalDiscount || 0,
       record_low_date: recordLowDate,
-    });
+    };
+
+    if (cookie) {
+      try {
+        const couponPrice = await fetchCouponPrice(id, cookie);
+        if (couponPrice != null) {
+          item.coupon_price = couponPrice;
+          item.estimated_price_with_mileage = Math.round(couponPrice * (1 - MILEAGE_CAP_RATE));
+        }
+      } catch (e) {
+        couponFetchFailures += 1;
+      }
+      await sleep(500); // be polite to musinsa.com between per-item page fetches
+    }
+
+    nextItems.push(item);
   }
 
   const brief = (i) => ({ id: i.id, name: i.name });
@@ -112,6 +166,15 @@ async function main() {
   fs.writeFileSync(SUMMARY_PATH, JSON.stringify(summary, null, 2) + '\n');
 
   console.log(JSON.stringify(summary, null, 2));
+  if (cookie && couponFetchFailures > 0) {
+    console.log(
+      `NOTE: coupon-price fetch failed for ${couponFetchFailures}/${live.length} item(s) — ` +
+        `MUSINSA_COOKIE may have expired and needs re-export from a fresh login.`
+    );
+  }
+  if (!cookie) {
+    console.log('NOTE: MUSINSA_COOKIE not set — coupon_price/estimated_price_with_mileage skipped.');
+  }
 }
 
 main().catch((err) => {
