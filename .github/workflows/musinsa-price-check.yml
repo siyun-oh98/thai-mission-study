@@ -28,10 +28,10 @@ jobs:
         with:
           node-version: '20'
 
-  - name: Run wishlist sync + price check
-    env:
-      MUSINSA_COOKIE: ${{ secrets.MUSINSA_COOKIE }}
-    run: node musinsa-price-tracker/scripts/check-and-update.js
+      - name: Run wishlist sync + price check
+        env:
+          MUSINSA_COOKIE: ${{ secrets.MUSINSA_COOKIE }}
+        run: node musinsa-price-tracker/scripts/check-and-update.js
 
       - name: Commit changes
         run: |
