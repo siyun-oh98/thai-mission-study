@@ -1,6 +1,6 @@
 {
   "updated_at": "2026-11-13",
-  "checked_at": "2026-11-12T17:32:47.758Z",
+  "checked_at": "2026-11-13T11:02:48.310Z",
   "items": [
     {
       "id": "6979608",
@@ -43,12 +43,12 @@
       "name": "[굿펠로우] 써모메쉬 비니 (4color)",
       "brand": "무신사 스탠다드 스포츠",
       "url": "https://www.musinsa.com/products/6696695",
-      "price": 13900,
+      "price": 17900,
       "lowest_price": 13900,
-      "discount_pct": 46,
+      "discount_pct": 31,
       "record_low_date": "2026-11-11",
-      "coupon_price": 13900,
-      "estimated_price_with_mileage": 12927
+      "coupon_price": 17900,
+      "estimated_price_with_mileage": 16647
     },
     {
       "id": "7362621",
@@ -235,12 +235,12 @@
       "name": "[스토커즈 컬래버] [빅토리아 울] 미니멀 리브드 쿼터 집 스웨터 [미디엄 그레이]",
       "brand": "무신사 스탠다드",
       "url": "https://www.musinsa.com/products/6660440",
-      "price": 75890,
-      "lowest_price": 75890,
-      "discount_pct": 5,
-      "record_low_date": null,
-      "coupon_price": 75890,
-      "estimated_price_with_mileage": 70578
+      "price": 55890,
+      "lowest_price": 55890,
+      "discount_pct": 30,
+      "record_low_date": "2026-11-13",
+      "coupon_price": 55890,
+      "estimated_price_with_mileage": 51978
     }
   ]
 }
