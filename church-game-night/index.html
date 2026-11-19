@@ -1,0 +1,385 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>교회 게임나이트 · 호스트</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛪</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="style.css">
+</head><body>
+<div id="app"></div>
+
+<script src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="common.js"></script>
+<script>
+/* ============== 호스트(프로젝터) 앱 ============== */
+const state = {
+  room: null,
+  screen: 'create', // create | setup | lobby | playing | result | podium
+  teams: [],
+  players: [],      // {id,nick,teamId,ts}
+  cumulative: {},   // teamId -> score
+  currentGameId: null,
+  roundId: null,
+  roundStartAt: null,
+  roundScores: {},  // playerId -> score
+  lastRanking: null,
+  connText: '연결 전',
+};
+let mqttConn = null;
+
+function playUrl() {
+  return new URL('play.html?room=' + encodeURIComponent(state.room), location.href).href;
+}
+
+function broadcastState() {
+  if (!mqttConn || !state.room) return;
+  const snapshot = {
+    screen: state.screen,
+    teams: state.teams,
+    players: state.players,
+    cumulative: state.cumulative,
+    currentGameId: state.currentGameId,
+    roundId: state.roundId,
+    roundStartAt: state.roundStartAt,
+    roundScores: state.roundScores,
+    lastRanking: state.lastRanking,
+    ts: Date.now(),
+  };
+  mqttConn.publish(topicState(state.room), snapshot, { retain: true, qos: 1 });
+}
+
+function connectRoom() {
+  state.room = genRoomCode();
+  mqttConn = connectBroker({
+    onConnect() {
+      state.connText = '연결됨';
+      mqttConn.subscribe(topicJoin(state.room));
+      mqttConn.subscribe(topicScore(state.room));
+      broadcastState();
+      render();
+    },
+    onMessage(topic, obj) {
+      if (topic === topicJoin(state.room)) onJoinMsg(obj);
+      else if (topic === topicScore(state.room)) onScoreMsg(obj);
+    },
+    onStatus(t) { state.connText = t; renderConnDotOnly(); },
+    onFail() { state.connText = '연결 실패 — 새로고침 후 다시 시도해주세요'; renderConnDotOnly(); },
+  });
+  state.screen = 'setup';
+  render();
+}
+
+function onJoinMsg(msg) {
+  if (!msg || typeof msg.id !== 'string') return;
+  const id = msg.id.slice(0, 40);
+  const nick = cleanText(msg.nick, 12) || '플레이어';
+  const teamId = (typeof msg.teamId === 'string' && state.teams.some(t => t.id === msg.teamId)) ? msg.teamId : null;
+  const existing = state.players.find(p => p.id === id);
+  if (existing) { existing.nick = nick; if (teamId) existing.teamId = teamId; existing.ts = Date.now(); }
+  else { state.players.push({ id, nick, teamId, ts: Date.now() }); }
+  broadcastState();
+  render();
+}
+function onScoreMsg(msg) {
+  if (!msg || typeof msg.id !== 'string' || typeof msg.roundId !== 'string') return;
+  if (state.screen !== 'playing' || state.roundId !== msg.roundId) return;
+  const score = clampNum(msg.score, 0, 100000, null);
+  if (score == null) return;
+  state.roundScores[msg.id] = score;
+  broadcastState();
+  render();
+  checkAutoFinish();
+}
+function checkAutoFinish() {
+  if (state.screen !== 'playing') return;
+  const total = state.players.filter(p => state.teams.some(t => t.id === p.teamId)).length;
+  const done = Object.keys(state.roundScores).length;
+  if (total > 0 && done >= total) finishRound();
+}
+
+function uidT() { return 't_' + uid(8); }
+
+function render() {
+  const app = document.getElementById('app');
+  if (state.screen === 'create') { app.innerHTML = createScreen(); bindCreate(); return; }
+  if (state.screen === 'setup') { app.innerHTML = header() + setupScreen(); bindSetup(); return; }
+  if (state.screen === 'lobby') { app.innerHTML = header() + lobbyScreen(); bindLobby(); return; }
+  if (state.screen === 'playing') { app.innerHTML = header() + roundScreen(); bindRound(); tickRound(); return; }
+  if (state.screen === 'result') { app.innerHTML = header() + resultScreen(); bindResult(); return; }
+  if (state.screen === 'podium') { app.innerHTML = header() + podiumScreen(); bindPodium(); return; }
+}
+function renderConnDotOnly() {
+  const dot = document.getElementById('connDot');
+  if (dot) { dot.style.background = state.connText === '연결됨' ? 'var(--good)' : 'var(--bad)'; dot.title = state.connText; }
+}
+
+function createScreen() {
+  return `<div class="center">
+    <h1 class="disp" style="font-size:44px;margin:0">⛪ 교회 게임나이트</h1>
+    <p class="muted">호스트 화면입니다. 방을 만들면 참가자들이 QR코드로 접속할 수 있어요.</p>
+    <button class="btn big" id="createBtn">방 만들기</button>
+  </div>`;
+}
+function bindCreate() { document.getElementById('createBtn').onclick = connectRoom; }
+
+function header() {
+  const url = playUrl();
+  return `<div class="host-header">
+    <div class="room-box">
+      <div class="qr-wrap" id="qrbox"></div>
+      <div>
+        <div class="muted" style="font-size:13px"><span class="conn-dot" id="connDot" style="background:${state.connText === '연결됨' ? 'var(--good)' : 'var(--bad)'}"></span>${escapeHtml(state.connText)}</div>
+        <div class="room-code">${escapeHtml(state.room)}</div>
+        <div class="room-url">${escapeHtml(url)}</div>
+      </div>
+    </div>
+    <div class="row">
+      <button class="btn ghost small" id="resetBtn">🔄 전체 초기화</button>
+    </div>
+  </div>`;
+}
+function mountQr() {
+  const box = document.getElementById('qrbox');
+  if (!box) return;
+  box.innerHTML = '';
+  try { new QRCode(box, { text: playUrl(), width: 140, height: 140, correctLevel: QRCode.CorrectLevel.M }); } catch (e) {}
+}
+function bindHeaderCommon() {
+  mountQr();
+  const r = document.getElementById('resetBtn');
+  if (r) r.onclick = resetAll;
+}
+
+function setupScreen() {
+  return `
+  <div class="center" style="min-height:40vh">
+    <h2 class="disp" style="margin:4px 0">팀을 만들어주세요 (2~8팀)</h2>
+    <p class="muted">참가자는 QR을 찍고 닉네임+팀을 고르면 바로 대기실에 들어와요.</p>
+    <div class="row">
+      <input class="input" id="teamname" placeholder="팀 이름 (예: 1부 교사팀)" maxlength="16">
+      <button class="btn" id="addteam" ${state.teams.length >= 8 ? 'disabled' : ''}>팀 추가</button>
+    </div>
+    <div class="row">
+      ${state.teams.map(t => `<span class="team-chip"><span class="dot" style="background:${t.color}"></span>${escapeHtml(t.name)} <span style="cursor:pointer;color:var(--muted)" data-rm="${t.id}">✕</span></span>`).join('') || '<span class="muted">아직 등록된 팀이 없어요</span>'}
+    </div>
+    <button class="btn big" id="toLobby" ${state.teams.length < 2 ? 'disabled' : ''}>게임 시작하기</button>
+  </div>
+  ${playerRoster()}`;
+}
+function playerRoster() {
+  if (state.teams.length === 0 && state.players.length === 0) return '';
+  const unassigned = state.players.filter(p => !state.teams.some(t => t.id === p.teamId));
+  return `<h3 style="margin-top:28px">참가자 현황 (${state.players.length}명)</h3>
+  <div class="teamcol-grid">
+    ${state.teams.map(t => {
+      const members = state.players.filter(p => p.teamId === t.id);
+      return `<div class="teamcol"><h4><span class="dot" style="background:${t.color}"></span>${escapeHtml(t.name)} <span class="pill">${members.length}명</span></h4>
+      ${members.map(p => `<div class="playerline">👤 ${escapeHtml(p.nick)}</div>`).join('') || '<div class="muted" style="font-size:13px">아직 없음</div>'}</div>`;
+    }).join('')}
+    ${unassigned.length ? `<div class="teamcol"><h4>미배정 <span class="pill">${unassigned.length}명</span></h4>${unassigned.map(p => `<div class="playerline">👤 ${escapeHtml(p.nick)}</div>`).join('')}</div>` : ''}
+  </div>`;
+}
+function bindSetup() {
+  bindHeaderCommon();
+  document.getElementById('addteam').onclick = () => {
+    const inp = document.getElementById('teamname');
+    const v = inp.value.trim().slice(0, 16);
+    if (!v || state.teams.length >= 8) return;
+    const id = uidT();
+    state.teams.push({ id, name: v, color: TEAM_COLORS[state.teams.length % TEAM_COLORS.length] });
+    state.cumulative[id] = 0;
+    inp.value = '';
+    broadcastState(); render();
+  };
+  document.querySelectorAll('[data-rm]').forEach(el => el.onclick = () => {
+    const id = el.dataset.rm;
+    state.teams = state.teams.filter(t => t.id !== id);
+    delete state.cumulative[id];
+    broadcastState(); render();
+  });
+  const toLobby = document.getElementById('toLobby');
+  if (toLobby) toLobby.onclick = () => { state.screen = 'lobby'; broadcastState(); render(); };
+}
+
+function lobbyScreen() {
+  return `
+  <div class="statusbar">
+    <h1 class="disp" style="margin:0;font-size:26px">게임 선택</h1>
+    <button class="btn ghost small" id="toSetup">팀 다시 설정</button>
+  </div>
+  <div class="gamegrid">
+    ${GAMES.map(g => `<div class="gametile" data-game="${g.id}"><div class="emo">${g.emo}</div><div style="font-weight:800">${escapeHtml(g.name)}</div></div>`).join('')}
+  </div>
+  <h3 style="margin-top:28px">누적 순위</h3>
+  ${cumulativeBoard()}
+  <div class="row" style="margin-top:16px">
+    <button class="btn" id="toPodium">🏆 최종 결과 보기</button>
+  </div>
+  ${bonusPanel()}
+  ${playerRoster()}`;
+}
+function cumulativeBoard() {
+  return [...state.teams].sort((a, b) => (state.cumulative[b.id] || 0) - (state.cumulative[a.id] || 0)).map(t =>
+    `<div class="scorebar-row"><span class="team-chip"><span class="dot" style="background:${t.color}"></span>${escapeHtml(t.name)}</span><span class="num" style="margin-left:auto;font-weight:800">${state.cumulative[t.id] || 0}점</span></div>`
+  ).join('') || '<p class="muted">팀이 없어요</p>';
+}
+function bonusPanel() {
+  if (state.teams.length === 0) return '';
+  return `<h3 style="margin-top:24px">보너스 점수 조정</h3>
+  ${state.teams.map(t => `<div class="bonus-row">
+    <span class="team-chip"><span class="dot" style="background:${t.color}"></span>${escapeHtml(t.name)} · ${state.cumulative[t.id] || 0}점</span>
+    <span class="row" style="gap:6px">
+      <button class="btn ghost small" data-bonus="${t.id}:-1">−1</button>
+      <button class="btn ghost small" data-bonus="${t.id}:1">+1</button>
+      <button class="btn ghost small" data-bonus="${t.id}:5">+5</button>
+    </span>
+  </div>`).join('')}`;
+}
+function bindBonusPanel() {
+  document.querySelectorAll('[data-bonus]').forEach(b => b.onclick = () => {
+    const [tid, delta] = b.dataset.bonus.split(':');
+    state.cumulative[tid] = (state.cumulative[tid] || 0) + Number(delta);
+    broadcastState(); render();
+  });
+}
+function bindLobby() {
+  bindHeaderCommon(); bindBonusPanel();
+  document.getElementById('toSetup').onclick = () => { state.screen = 'setup'; broadcastState(); render(); };
+  document.getElementById('toPodium').onclick = () => { state.screen = 'podium'; broadcastState(); render(); };
+  document.querySelectorAll('[data-game]').forEach(el => el.onclick = () => startGame(el.dataset.game));
+}
+
+function startGame(gameId) {
+  state.currentGameId = gameId;
+  state.roundId = uid(10);
+  state.roundStartAt = Date.now() + 3200;
+  state.roundScores = {};
+  state.lastRanking = null;
+  state.screen = 'playing';
+  broadcastState();
+  render();
+}
+let roundTickHandle = null;
+function tickRound() {
+  if (roundTickHandle) clearInterval(roundTickHandle);
+  roundTickHandle = setInterval(() => {
+    if (state.screen !== 'playing') { clearInterval(roundTickHandle); return; }
+    const el = document.getElementById('roundCountdown');
+    if (el) {
+      const left = Math.ceil((state.roundStartAt - Date.now()) / 1000);
+      el.textContent = left > 0 ? `시작까지 ${left}초` : '진행 중';
+    }
+  }, 250);
+}
+function roundScreen() {
+  const g = GAME_BY_ID[state.currentGameId];
+  const total = state.players.filter(p => state.teams.some(t => t.id === p.teamId)).length;
+  const done = Object.keys(state.roundScores).length;
+  return `<div class="center">
+    <h1 class="disp">${g.emo} ${escapeHtml(g.name)}</h1>
+    <p class="muted">${escapeHtml(g.how)}</p>
+    <p id="roundCountdown" class="disp" style="font-size:26px;color:var(--gold)"></p>
+    <div class="finishbar-big">응답완료 ${done} / ${total}</div>
+    <div class="scorebar-track" style="max-width:420px"><div class="scorebar-fill" style="width:${total ? (done / total * 100) : 0}%;background:var(--good)"></div></div>
+    <div class="row" style="margin-top:20px">
+      <button class="btn" id="finishNow">결과 보기</button>
+      <button class="btn ghost" id="skipRound">게임 건너뛰기</button>
+    </div>
+  </div>`;
+}
+function bindRound() {
+  bindHeaderCommon();
+  document.getElementById('finishNow').onclick = finishRound;
+  document.getElementById('skipRound').onclick = skipRound;
+}
+function skipRound() {
+  state.currentGameId = null; state.roundId = null; state.roundStartAt = null; state.roundScores = {};
+  state.screen = 'lobby'; broadcastState(); render();
+}
+function finishRound() {
+  const scoresByTeam = {};
+  state.teams.forEach(t => scoresByTeam[t.id] = []);
+  Object.entries(state.roundScores).forEach(([pid, score]) => {
+    const p = state.players.find(x => x.id === pid);
+    if (p && scoresByTeam[p.teamId]) scoresByTeam[p.teamId].push(score);
+  });
+  const ranking = state.teams.map(t => {
+    const arr = scoresByTeam[t.id] || [];
+    const avg = arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+    return { teamId: t.id, score: avg, n: arr.length };
+  }).sort((a, b) => b.score - a.score);
+  ranking.forEach((r, i) => {
+    const pts = Math.max(1, state.teams.length - i);
+    state.cumulative[r.teamId] = (state.cumulative[r.teamId] || 0) + pts;
+    r.pts = pts;
+  });
+  state.lastRanking = ranking;
+  state.screen = 'result';
+  broadcastState();
+  render();
+}
+
+function resultScreen() {
+  const g = GAME_BY_ID[state.currentGameId];
+  return `<h1 class="disp">${g.emo} ${escapeHtml(g.name)} 결과</h1>
+  ${state.lastRanking.map((r, i) => {
+    const t = state.teams.find(x => x.id === r.teamId);
+    return `<div class="scorebar-row">
+      <span style="width:28px;font-weight:900">${i + 1}</span>
+      <span class="team-chip" style="min-width:130px"><span class="dot" style="background:${t.color}"></span>${escapeHtml(t.name)}</span>
+      <span class="muted num">평균 ${r.score.toFixed(1)}점 (${r.n}명 참여)</span>
+      <span class="num" style="margin-left:auto;font-weight:900;color:var(--gold)">+${r.pts}점</span>
+    </div>`;
+  }).join('')}
+  <h3 style="margin-top:28px">누적 순위</h3>
+  ${cumulativeBoard()}
+  <div class="row" style="margin-top:24px">
+    <button class="btn" id="toLobby2">다음 게임 고르기</button>
+    <button class="btn ghost" id="toPodium2">🏆 최종 결과 보기</button>
+  </div>
+  ${bonusPanel()}`;
+}
+function bindResult() {
+  bindHeaderCommon(); bindBonusPanel();
+  document.getElementById('toLobby2').onclick = () => { state.screen = 'lobby'; broadcastState(); render(); };
+  document.getElementById('toPodium2').onclick = () => { state.screen = 'podium'; broadcastState(); render(); };
+}
+
+function podiumScreen() {
+  const ranked = [...state.teams].sort((a, b) => (state.cumulative[b.id] || 0) - (state.cumulative[a.id] || 0));
+  const top3 = ranked.slice(0, 3);
+  const order = top3.length === 3 ? [1, 0, 2] : top3.map((_, i) => i);
+  const heights = [70, 100, 55];
+  return `<div class="center">
+    <h1 class="disp" style="font-size:40px">🏆 최종 결과 🏆</h1>
+    <div style="display:flex;align-items:flex-end;gap:14px;width:100%;max-width:480px;height:220px">
+      ${order.map((idx, pos) => {
+        const t = top3[idx]; if (!t) return '<div style="flex:1"></div>';
+        return `<div class="podium-step">
+          <div class="disp" style="font-size:20px">${escapeHtml(t.name)}</div>
+          <div class="num" style="font-weight:900">${state.cumulative[t.id] || 0}점</div>
+          <div class="podium-bar" style="height:${heights[pos]}px;background:${t.color}"></div>
+          <div class="disp" style="font-size:26px">${idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉'}</div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="row">${ranked.slice(3).map((t, i) => `<span class="team-chip">${i + 4}위 ${escapeHtml(t.name)} · ${state.cumulative[t.id] || 0}점</span>`).join('')}</div>
+    <button class="btn" id="backLobby3">게임 계속하기</button>
+  </div>
+  ${bonusPanel()}`;
+}
+function bindPodium() {
+  bindHeaderCommon(); bindBonusPanel();
+  document.getElementById('backLobby3').onclick = () => { state.screen = 'lobby'; broadcastState(); render(); };
+}
+
+function resetAll() {
+  if (!confirm('정말 전체 초기화할까요? 팀, 참가자, 점수가 모두 사라집니다.')) return;
+  state.teams = []; state.players = []; state.cumulative = {};
+  state.currentGameId = null; state.roundId = null; state.roundStartAt = null; state.roundScores = {}; state.lastRanking = null;
+  state.screen = 'setup';
+  broadcastState(); render();
+}
+
+render();
+</script>
+</body></html>

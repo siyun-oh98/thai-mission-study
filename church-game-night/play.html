@@ -1,0 +1,275 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<title>교회 게임나이트 · 참가</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛪</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="style.css">
+</head><body>
+<div id="app"></div>
+
+<script src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js"></script>
+<script src="common.js"></script>
+<script src="games.js"></script>
+<script>
+/* ============== 폰(참가자) 앱 ============== */
+const qs = new URLSearchParams(location.search);
+const ROOM = (qs.get('room') || '').trim().toUpperCase().slice(0, 8);
+
+function lsKey(suffix) { return `gn_${ROOM}_${suffix}`; }
+let PLAYER_ID = localStorage.getItem('gn_playerId');
+if (!PLAYER_ID) { PLAYER_ID = uid(14); localStorage.setItem('gn_playerId', PLAYER_ID); }
+
+const pstate = {
+  screen: ROOM ? 'connecting' : 'noroom', // noroom | connecting | nickname | live | error
+  hostState: null,
+  nick: localStorage.getItem(lsKey('nick')) || '',
+  teamId: localStorage.getItem(lsKey('team')) || null,
+  mountedRoundId: localStorage.getItem(lsKey('lastRound')) || null,
+  gameMountedFor: null, // roundId currently mounted in #gamearea (in-memory only)
+};
+let mqttConn = null;
+
+function joinedOk() { return !!(pstate.nick && pstate.teamId); }
+
+function publishJoin() {
+  if (!mqttConn || !ROOM) return;
+  mqttConn.publish(topicJoin(ROOM), { id: PLAYER_ID, nick: pstate.nick, teamId: pstate.teamId, ts: Date.now() });
+}
+function publishScore(score) {
+  if (!mqttConn || !ROOM || !pstate.hostState) return;
+  mqttConn.publish(topicScore(ROOM), { id: PLAYER_ID, roundId: pstate.hostState.roundId, score, ts: Date.now() });
+}
+
+function connect() {
+  mqttConn = connectBroker({
+    onConnect() {
+      mqttConn.subscribe(topicState(ROOM));
+    },
+    onMessage(topic, obj) {
+      if (topic !== topicState(ROOM)) return;
+      onHostState(obj);
+    },
+    onStatus() {},
+    onFail() { pstate.screen = 'error'; render(); },
+  });
+}
+
+function onHostState(obj) {
+  const first = pstate.hostState === null;
+  pstate.hostState = sanitizeHostState(obj);
+  if (first) {
+    if (joinedOk() && pstate.hostState.teams.some(t => t.id === pstate.teamId)) {
+      pstate.screen = 'live';
+      publishJoin();
+    } else {
+      pstate.screen = 'nickname';
+    }
+  }
+  render();
+}
+function sanitizeHostState(o) {
+  const teams = Array.isArray(o.teams) ? o.teams.filter(t => t && typeof t.id === 'string').map(t => ({ id: t.id, name: cleanText(t.name, 16), color: typeof t.color === 'string' ? t.color : '#888' })) : [];
+  return {
+    screen: typeof o.screen === 'string' ? o.screen : 'setup',
+    teams,
+    cumulative: (o.cumulative && typeof o.cumulative === 'object') ? o.cumulative : {},
+    currentGameId: typeof o.currentGameId === 'string' ? o.currentGameId : null,
+    roundId: typeof o.roundId === 'string' ? o.roundId : null,
+    roundStartAt: typeof o.roundStartAt === 'number' ? o.roundStartAt : null,
+    lastRanking: Array.isArray(o.lastRanking) ? o.lastRanking : null,
+  };
+}
+
+function render() {
+  // 게임이 이미 내 화면에 떠서 진행 중이면(제출 전) 다른 플레이어의 점수 도착 등으로
+  // 전체를 다시 그려서 진행 중인 게임 DOM을 날리지 않는다.
+  if (pstate.screen === 'live' && pstate.hostState && pstate.hostState.screen === 'playing'
+      && pstate.gameMountedFor === pstate.hostState.roundId
+      && pstate.mountedRoundId !== pstate.hostState.roundId) {
+    return;
+  }
+  const app = document.getElementById('app');
+  if (pstate.screen === 'noroom') { app.innerHTML = noRoomScreen(); bindNoRoom(); return; }
+  if (pstate.screen === 'connecting') { app.innerHTML = connectingScreen(); return; }
+  if (pstate.screen === 'error') { app.innerHTML = errorScreen(); bindError(); return; }
+  if (pstate.screen === 'nickname') { app.innerHTML = nicknameScreen(); bindNickname(); return; }
+  if (pstate.screen === 'live') { app.innerHTML = liveScreen(); bindLive(); return; }
+}
+
+function noRoomScreen() {
+  return `<div class="center">
+    <h1 class="disp">⛪ 게임나이트 참가</h1>
+    <p class="muted">방 코드를 입력해주세요</p>
+    <input class="input" id="roomInput" maxlength="8" placeholder="방 코드 (예: AB3K)" style="text-align:center;font-size:28px;letter-spacing:4px;text-transform:uppercase">
+    <button class="btn big" id="goRoom">입장하기</button>
+  </div>`;
+}
+function bindNoRoom() {
+  document.getElementById('goRoom').onclick = () => {
+    const v = document.getElementById('roomInput').value.trim().toUpperCase();
+    if (!v) return;
+    location.href = 'play.html?room=' + encodeURIComponent(v);
+  };
+}
+function connectingScreen() {
+  return `<div class="center"><h1 class="disp">⛪ 게임나이트</h1><p class="muted">방 "${escapeHtml(ROOM)}"에 연결 중...</p>
+  <div class="countdown-num">⏳</div></div>`;
+}
+function errorScreen() {
+  return `<div class="center"><h1 class="disp">연결에 실패했어요</h1>
+  <p class="muted">와이파이 상태를 확인하고 다시 시도해주세요.</p>
+  <button class="btn big" id="retryBtn">다시 시도</button></div>`;
+}
+function bindError() { document.getElementById('retryBtn').onclick = () => location.reload(); }
+
+function nicknameScreen() {
+  const teams = pstate.hostState.teams;
+  return `<div class="center">
+    <h1 class="disp">⛪ 게임나이트</h1>
+    <p class="pill">방 ${escapeHtml(ROOM)}</p>
+    <input class="input" id="nickInput" maxlength="10" placeholder="닉네임 (최대 10자)" value="${escapeHtml(pstate.nick)}">
+    ${teams.length === 0
+      ? `<p class="muted">호스트가 팀을 만드는 중이에요. 잠시만 기다려주세요...</p>`
+      : `<div class="teampick" id="teampick">${teams.map(t => `<div class="teampick-opt ${t.id === pstate.teamId ? 'sel' : ''}" data-team="${t.id}"><span class="dot" style="background:${t.color}"></span>${escapeHtml(t.name)}</div>`).join('')}</div>`}
+    <button class="btn big" id="joinBtn" ${teams.length === 0 ? 'disabled' : ''}>입장하기</button>
+  </div>`;
+}
+function bindNickname() {
+  document.querySelectorAll('[data-team]').forEach(el => el.onclick = () => {
+    pstate.teamId = el.dataset.team;
+    document.querySelectorAll('[data-team]').forEach(e => e.classList.toggle('sel', e.dataset.team === pstate.teamId));
+  });
+  document.getElementById('joinBtn').onclick = () => {
+    const nick = cleanText(document.getElementById('nickInput').value, 10);
+    if (!nick || !pstate.teamId) { alert('닉네임을 쓰고 팀을 골라주세요!'); return; }
+    pstate.nick = nick;
+    localStorage.setItem(lsKey('nick'), nick);
+    localStorage.setItem(lsKey('team'), pstate.teamId);
+    publishJoin();
+    pstate.screen = 'live';
+    render();
+  };
+}
+
+function myTeam() {
+  if (!pstate.hostState) return null;
+  return pstate.hostState.teams.find(t => t.id === pstate.teamId) || null;
+}
+function footer() {
+  const t = myTeam();
+  return `<div class="phone-footer">
+    <span>👤 ${escapeHtml(pstate.nick)} ${t ? `· <span class="dot" style="background:${t.color};display:inline-block"></span> ${escapeHtml(t.name)}` : ''}</span>
+    <span class="muted">방 ${escapeHtml(ROOM)}</span>
+  </div>`;
+}
+
+function liveScreen() {
+  const hs = pstate.hostState;
+  if (hs.screen === 'setup' || hs.screen === 'lobby') return waitingScreen(hs) + footer();
+  if (hs.screen === 'playing') return playingWrapScreen(hs) + footer();
+  if (hs.screen === 'result') return resultScreenPhone(hs) + footer();
+  if (hs.screen === 'podium') return podiumScreenPhone(hs) + footer();
+  return waitingScreen(hs) + footer();
+}
+function cumulativeMini(hs) {
+  return [...hs.teams].sort((a, b) => (hs.cumulative[b.id] || 0) - (hs.cumulative[a.id] || 0)).map(t =>
+    `<div class="scorebar-row"><span class="team-chip" style="${t.id === pstate.teamId ? 'border-color:var(--accent)' : ''}"><span class="dot" style="background:${t.color}"></span>${escapeHtml(t.name)}</span><span class="num" style="margin-left:auto;font-weight:800">${hs.cumulative[t.id] || 0}점</span></div>`
+  ).join('');
+}
+function waitingScreen(hs) {
+  return `<div class="center">
+    <h2 class="disp">대기 중이에요</h2>
+    <p class="muted">호스트가 다음 게임을 고르고 있어요...</p>
+    <div class="card" style="width:100%;max-width:420px">${cumulativeMini(hs)}</div>
+  </div>`;
+}
+function playingWrapScreen(hs) {
+  const g = GAME_BY_ID[hs.currentGameId];
+  if (!g) return waitingScreen(hs);
+  const left = hs.roundStartAt - Date.now();
+  const alreadyPlayed = pstate.mountedRoundId === hs.roundId;
+  if (left > 0) {
+    return `<div class="center">
+      <p class="pill">${g.emo} ${escapeHtml(g.name)}</p>
+      <p class="muted">${escapeHtml(g.how)}</p>
+      <div class="countdown-num" id="cdnum">${Math.ceil(left / 1000)}</div>
+      <p class="muted">곧 시작합니다, 준비하세요!</p>
+    </div>`;
+  }
+  if (alreadyPlayed) {
+    return `<div class="center">
+      <h2 class="disp">제출 완료! ✅</h2>
+      <p class="muted">다른 친구들을 기다리는 중...</p>
+    </div>`;
+  }
+  return `<div class="center">
+    <div class="team-chip">${(myTeam() || {}).name ? escapeHtml(myTeam().name) : ''}</div>
+    <h2 style="margin:4px 0">${g.emo} ${escapeHtml(g.name)}</h2>
+    <div id="gamearea" style="width:100%"></div>
+  </div>`;
+}
+function resultScreenPhone(hs) {
+  const g = GAME_BY_ID[hs.currentGameId];
+  const ranking = hs.lastRanking || [];
+  return `<h2 class="disp">${g ? g.emo + ' ' + escapeHtml(g.name) : ''} 결과</h2>
+  ${ranking.map((r, i) => {
+    const t = hs.teams.find(x => x.id === r.teamId);
+    if (!t) return '';
+    return `<div class="scorebar-row" style="${t.id === pstate.teamId ? 'outline:2px solid var(--accent);border-radius:10px;padding:6px' : ''}">
+      <span style="width:24px;font-weight:900">${i + 1}</span>
+      <span class="team-chip"><span class="dot" style="background:${t.color}"></span>${escapeHtml(t.name)}</span>
+      <span class="num" style="margin-left:auto;font-weight:900;color:var(--gold)">+${r.pts}점</span>
+    </div>`;
+  }).join('')}
+  <h3 style="margin-top:24px">누적 순위</h3>
+  <div class="card">${cumulativeMini(hs)}</div>
+  <p class="muted" style="margin-top:14px">다음 게임을 기다리는 중...</p>`;
+}
+function podiumScreenPhone(hs) {
+  const ranked = [...hs.teams].sort((a, b) => (hs.cumulative[b.id] || 0) - (hs.cumulative[a.id] || 0));
+  return `<div class="center">
+    <h1 class="disp">🏆 최종 결과 🏆</h1>
+    ${ranked.map((t, i) => `<div class="scorebar-row" style="${t.id === pstate.teamId ? 'outline:2px solid var(--accent);border-radius:10px;padding:6px' : ''}">
+      <span class="disp" style="width:34px">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1)}</span>
+      <span class="team-chip"><span class="dot" style="background:${t.color}"></span>${escapeHtml(t.name)}</span>
+      <span class="num" style="margin-left:auto;font-weight:900">${hs.cumulative[t.id] || 0}점</span>
+    </div>`).join('')}
+  </div>`;
+}
+
+function bindLive() {
+  const hs = pstate.hostState;
+  if (hs.screen === 'playing') {
+    const g = GAME_BY_ID[hs.currentGameId];
+    const left = hs.roundStartAt - Date.now();
+    const alreadyPlayed = pstate.mountedRoundId === hs.roundId;
+    if (g && left <= 0 && !alreadyPlayed) {
+      const area = document.getElementById('gamearea');
+      if (area && pstate.gameMountedFor !== hs.roundId) {
+        pstate.gameMountedFor = hs.roundId;
+        mountGame(area, g, (score) => {
+          const s = clampNum(score, 0, 100000, 0);
+          pstate.mountedRoundId = hs.roundId;
+          localStorage.setItem(lsKey('lastRound'), hs.roundId);
+          publishScore(s);
+          render();
+        });
+      }
+    }
+  }
+}
+
+/* 0.3초마다: 카운트다운 숫자 갱신 + 게임 시작 트리거 (닉네임 입력 등 다른 화면에는 영향 없음) */
+setInterval(() => {
+  if (pstate.screen !== 'live' || !pstate.hostState || pstate.hostState.screen !== 'playing') return;
+  const left = pstate.hostState.roundStartAt - Date.now();
+  const cd = document.getElementById('cdnum');
+  if (cd && left > 0) { cd.textContent = Math.ceil(left / 1000); return; }
+  if (left <= 0 && !document.getElementById('gamearea') && pstate.mountedRoundId !== pstate.hostState.roundId) {
+    render(); // 카운트다운 종료 -> 게임 화면으로 전환
+  }
+}, 250);
+
+if (ROOM) connect();
+render();
+</script>
+</body></html>
