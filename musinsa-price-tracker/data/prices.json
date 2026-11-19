@@ -1,6 +1,6 @@
 {
   "updated_at": "2026-11-19",
-  "checked_at": "2026-11-19T11:44:29.083Z",
+  "checked_at": "2026-11-19T14:50:41.104Z",
   "items": [
     {
       "id": "6979608",
@@ -202,5 +202,6 @@
       "discount_pct": 5,
       "record_low_date": "2026-11-13"
     }
-  ]
+  ],
+  "coupon_login_ok": false
 }
