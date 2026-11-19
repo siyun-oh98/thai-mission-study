@@ -4,6 +4,10 @@
 // and writes data/last_run_summary.json so the downstream Claude cloud routine can alert
 // on record-low prices without ever needing to reach musinsa.com itself.
 //
+// 2026-11-20: musinsa.com product pages are behind Cloudflare bot protection since 2026-11-17, so the
+// cookie fetch below no longer works from Actions. Coupon values are now refreshed by hand from the
+// owner's real Chrome (master session) and carried forward here with their coupon_as_of date.
+//
 // Coupon/mileage estimate (2026-11-12): if MUSINSA_COOKIE is set (a GitHub secret holding
 // an exported login session), each item's own product page is fetched with that cookie and
 // its embedded `goodsPrice.couponPrice` is read off — this is the real, logged-in coupon

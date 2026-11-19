@@ -149,6 +149,11 @@
 <footer>매일 저녁 자동으로 가격 확인 · 역대 최저가 도달 시 알림</footer>
 
 <script>
+function staleCoupon(data) {
+  const ds = (data.items || []).map(i => i.coupon_as_of).filter(Boolean).sort();
+  if (!ds.length || !data.updated_at) return false;
+  return (new Date(data.updated_at) - new Date(ds[ds.length - 1])) / 86400000 > 7;
+}
 function won(n) { return Number(n).toLocaleString('ko-KR') + '원'; }
 // Highlight any item currently sitting at its all-time-low price — whether that low was
 // set today or on an earlier check day.
@@ -164,7 +169,7 @@ fetch('./data/prices.json', { cache: 'no-store' })
   .then(data => {
     document.getElementById('loading').style.display = 'none';
     document.getElementById('updated').textContent = '마지막 갱신: ' + (data.updated_at || '알 수 없음') +
-      (data.coupon_login_ok === false ? '  ·  ⚠ 무신사 로그인 만료: 쿠폰+적립금 금액은 마지막으로 읽은 날 기준입니다' : '');
+      (staleCoupon(data) ? '  ·  ⚠ 쿠폰+적립금 금액이 7일 넘게 갱신되지 않았습니다 (크롬에서 "무신사 쿠폰가 갱신" 필요)' : '');
 
     const items = (data.items || []).slice().sort((a, b) => {
       const aRecord = isNewRecord(a) ? 1 : 0;
