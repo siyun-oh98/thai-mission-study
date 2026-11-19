@@ -72,6 +72,7 @@ async function main() {
 
   const cookie = process.env.MUSINSA_COOKIE || '';
   let couponFetchFailures = 0;
+  let couponOk = 0;
 
   // The workflow may run several times a day (backup crons). Carry today's earlier
   // added/removed over so a later run doesn't wipe what an earlier one found.
@@ -111,17 +112,31 @@ async function main() {
       record_low_date: recordLowDate,
     };
 
+    let gotCoupon = false;
     if (cookie) {
       try {
         const couponPrice = await fetchCouponPrice(id, cookie);
         if (couponPrice != null) {
           item.coupon_price = couponPrice;
           item.estimated_price_with_mileage = Math.round(couponPrice * (1 - MILEAGE_CAP_RATE));
+          item.coupon_as_of = today;
+          gotCoupon = true;
+          couponOk += 1;
+        } else {
+          couponFetchFailures += 1;
         }
       } catch (e) {
         couponFetchFailures += 1;
       }
       await sleep(500); // be polite to musinsa.com between per-item page fetches
+    }
+    // 2026-11-19: never silently drop the coupon/mileage line. If this run could not read it
+    // (login expired, page changed), keep the last known values with the date they were read,
+    // so the page can show them as "N월 N일 기준" plus a login-expired warning.
+    if (!gotCoupon && existing && existing.estimated_price_with_mileage != null) {
+      item.coupon_price = existing.coupon_price;
+      item.estimated_price_with_mileage = existing.estimated_price_with_mileage;
+      item.coupon_as_of = existing.coupon_as_of || null;
     }
 
     nextItems.push(item);
@@ -150,9 +165,17 @@ async function main() {
   const out = { updated_at: today, checked_at: new Date().toISOString(), items: nextItems };
   fs.writeFileSync(PRICES_PATH, JSON.stringify(out, null, 2) + '\n');
 
+  // Login health for the coupon/mileage line: ok only when at least one item's logged-in
+  // coupon price was actually read this run.
+  const couponLoginOk = !!cookie && couponOk > 0;
+  out.coupon_login_ok = couponLoginOk;
+  fs.writeFileSync(PRICES_PATH, JSON.stringify(out, null, 2) + '\n');
+
   const summary = {
     updated_at: today,
     checked_at: out.checked_at,
+    coupon_login_ok: couponLoginOk,
+    coupon_ok_count: couponOk,
     added,
     removed,
     record_lows: recordLows.map((i) => ({

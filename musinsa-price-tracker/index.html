@@ -163,7 +163,8 @@ fetch('./data/prices.json', { cache: 'no-store' })
   })
   .then(data => {
     document.getElementById('loading').style.display = 'none';
-    document.getElementById('updated').textContent = '마지막 갱신: ' + (data.updated_at || '알 수 없음');
+    document.getElementById('updated').textContent = '마지막 갱신: ' + (data.updated_at || '알 수 없음') +
+      (data.coupon_login_ok === false ? '  ·  ⚠ 무신사 로그인 만료: 쿠폰+적립금 금액은 마지막으로 읽은 날 기준입니다' : '');
 
     const items = (data.items || []).slice().sort((a, b) => {
       const aRecord = isNewRecord(a) ? 1 : 0;
@@ -222,7 +223,9 @@ fetch('./data/prices.json', { cache: 'no-store' })
       if (item.estimated_price_with_mileage != null) {
         const est = document.createElement('div');
         est.className = 'lowest';
-        est.textContent = '쿠폰+적립금 추정 ' + won(item.estimated_price_with_mileage);
+        const stale = item.coupon_as_of && data && data.updated_at && item.coupon_as_of !== data.updated_at;
+        est.textContent = '쿠폰+적립금 추정 ' + won(item.estimated_price_with_mileage) +
+          (stale ? ' (' + item.coupon_as_of.slice(5).replace('-', '/') + ' 기준)' : '');
         est.title = '쿠폰적용가에서 적립금 7% 한도 적용을 추정한 값 — 실제 결제화면과 다를 수 있음';
         right.appendChild(est);
       }
