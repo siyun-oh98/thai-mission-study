@@ -1,43 +1,9 @@
 {
-  "updated_at": "2026-11-24",
-  "checked_at": "2026-11-24T13:47:27.295Z",
+  "updated_at": "2026-11-25",
+  "checked_at": "2026-11-24T18:12:37.090Z",
   "coupon_login_ok": false,
   "coupon_ok_count": 0,
-  "added": [
-    {
-      "id": "7737000",
-      "name": "팔레트 클럽 후드 티셔츠_로얄 블루"
-    },
-    {
-      "id": "3271527",
-      "name": "메쉬액트 플래시 롱슬리브 (3color)"
-    },
-    {
-      "id": "5760978",
-      "name": "퀵드라이 루즈핏 스티치 후드풀오버 (3color)"
-    },
-    {
-      "id": "5915560",
-      "name": "[시티 레저] 스포티브 텍스처드 티셔츠 [블루 그레이]"
-    }
-  ],
-  "removed": [
-    {
-      "id": "3758305",
-      "name": "릴렉스드 워시드 포플린 셔츠 [블랙]"
-    },
-    {
-      "id": "5964805",
-      "name": "L-2B 후디드 헌터 플라이트 자켓 블랙"
-    }
-  ],
-  "record_lows": [
-    {
-      "id": "7269944",
-      "name": "VINTAGE FLEECE PULLOVER_GRAY",
-      "brand": "아웃스탠딩",
-      "price": 58800,
-      "url": "https://www.musinsa.com/products/7269944"
-    }
-  ]
+  "added": [],
+  "removed": [],
+  "record_lows": []
 }
