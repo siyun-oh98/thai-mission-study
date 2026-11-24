@@ -1,6 +1,6 @@
 {
   "updated_at": "2026-11-24",
-  "checked_at": "2026-11-23T21:15:44.427Z",
+  "checked_at": "2026-11-24T13:47:27.295Z",
   "coupon_login_ok": false,
   "coupon_ok_count": 0,
   "added": [
@@ -31,5 +31,13 @@
       "name": "L-2B 후디드 헌터 플라이트 자켓 블랙"
     }
   ],
-  "record_lows": []
+  "record_lows": [
+    {
+      "id": "7269944",
+      "name": "VINTAGE FLEECE PULLOVER_GRAY",
+      "brand": "아웃스탠딩",
+      "price": 58800,
+      "url": "https://www.musinsa.com/products/7269944"
+    }
+  ]
 }
